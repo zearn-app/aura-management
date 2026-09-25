@@ -522,3 +522,31 @@ ul{margin:0;padding:0;list-style:none;}
   .overlay-panel{padding:32px 22px 30px;}
   .card-body{padding:28px 26px;}
 }
+
+
+/* Food Waste → Fertilizer / Bio Gas transition */
+
+#section-choice {
+  display: none;
+}
+
+#section-choice.is-visible {
+  display: block;
+  animation: choiceReveal 0.6s ease forwards;
+}
+
+#section-foodwaste.is-hidden {
+  display: none;
+}
+
+@keyframes choiceReveal {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
