@@ -729,4 +729,259 @@
        3. DATA LOADING
        ========================================== */
 
+ let requestRows = [];
+    let userRows = [];
+    let productRows = [];
+
+    async function loadRequests() {
+      const tbody = document.getElementById("requests-body");
+      renderLoading(tbody, 8);
+
+      try {
+        const q = query(
+          collection(db, "foodWasteRequests"),
+          orderBy("createdAt", "desc")
+        );
+
+        const snapshot = await getDocs(q);
+
+        requestRows = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+
+        renderRequests();
+        document.getElementById("stat-requests").textContent = requestRows.length;
+      } catch (error) {
+        console.error(error);
+        renderError(
+          tbody,
+          8,
+          "Unable to load requests. Check Firestore rules and the foodWasteRequests collection."
+        );
+      }
+    }
+
+    async function loadUsers() {
+      const tbody = document.getElementById("users-body");
+      renderLoading(tbody, 5);
+
+      try {
+        /*
+          The public AURA flow currently does not require user login.
+          So the main user information is stored inside foodWasteRequests.
+          We first try the users collection, then add unique users found
+          in requests so the Users tab still works with the current site.
+        */
+        let explicitUsers = [];
+
+        try {
+          const snapshot = await getDocs(collection(db, "users"));
+
+          explicitUsers = snapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+        } catch (usersError) {
+          console.warn("users collection unavailable; deriving users from requests.", usersError);
+        }
+
+        const derivedByEmail = new Map();
+
+        requestRows.forEach(request => {
+          const email = String(request.email || "").trim().toLowerCase();
+          if (!email) return;
+
+          if (!derivedByEmail.has(email)) {
+            derivedByEmail.set(email, {
+              id: `request-user-${email}`,
+              name: request.name || "",
+              displayName: request.displayName || "",
+              email: request.email || "",
+              phone: request.phone || "",
+              address: request.address || "",
+              createdAt: request.createdAt || null
+            });
+          }
+        });
+
+        const explicitByEmail = new Map(
+          explicitUsers
+            .filter(user => user.email)
+            .map(user => [String(user.email).trim().toLowerCase(), user])
+        );
+
+        // Explicit users take priority; request-derived users fill missing users.
+        for (const [email, user] of derivedByEmail) {
+          if (!explicitByEmail.has(email)) {
+            explicitUsers.push(user);
+          }
+        }
+
+        userRows = explicitUsers;
+
+        renderUsers();
+        document.getElementById("stat-users").textContent = userRows.length;
+      } catch (error) {
+        console.error(error);
+        renderError(
+          tbody,
+          5,
+          "Unable to load users. Check Firestore rules and foodWasteRequests."
+        );
+      }
+    }
+
+    async function loadProducts() {
+      const tbody = document.getElementById("products-body");
+      renderLoading(tbody, 6);
+
+      try {
+        const snapshot = await getDocs(collection(db, "products"));
+
+        productRows = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+
+        renderProducts();
+
+        document.getElementById("stat-products").textContent = productRows.length;
+        document.getElementById("stat-active-products").textContent =
+          productRows.filter(product => product.active === true).length;
+      } catch (error) {
+        console.error(error);
+        renderError(
+          tbody,
+          6,
+          "Unable to load products. Check Firestore rules and the products collection."
+        );
+      }
+    }
+
+    async function loadDashboard() {
+      await Promise.all([
+        loadRequests(),
+        loadUsers(),
+        loadProducts()
+      ]);
+    }
+
+    /* ==========================================
+       4. REQUEST TABLE
+       ========================================== */
+
+    function renderRequests() {
+      const tbody = document.getElementById("requests-body");
+      const search = normalize(document.getElementById("request-search").value);
+
+      const filtered = requestRows.filter(item => {
+        const waste = Array.isArray(item.selectedWasteTypes)
+          ? item.selectedWasteTypes.join(" ")
+          : "";
+
+        const text = [
+          item.requestId,
+          item.email,
+          item.phone,
+          item.category,
+          item.address,
+          item.status,
+          waste
+        ].join(" ");
+
+        return normalize(text).includes(search);
+      });
+
+      if (!filtered.length) {
+        renderEmpty(tbody, 8);
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const wasteTypes = Array.isArray(item.selectedWasteTypes)
+          ? item.selectedWasteTypes
+          : [];
+
+        const locationText = item.locationShared
+          ? `${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}`
+          : "Not shared";
+
+        return `
+          <tr>
+            <td>
+              <strong>${escapeHtml(item.requestId || item.id)}</strong>
+              <div class="muted small">${escapeHtml(item.id)}</div>
+            </td>
+            <td>
+              <strong>${escapeHtml(item.email || "—")}</strong>
+              <div class="muted small">${escapeHtml(item.phone || "—")}</div>
+            </td>
+            <td>${escapeHtml(item.category || "—")}</td>
+            <td>
+              <div class="chips">
+                ${wasteTypes.length
+                  ? wasteTypes.map(w => `<span class="chip">${escapeHtml(w)}</span>`).join("")
+                  : "—"}
+              </div>
+            </td>
+            <td>${escapeHtml(item.address || "—")}</td>
+            <td>
+              ${escapeHtml(locationText)}
+              ${item.locationShared && item.altitude !== null && item.altitude !== undefined
+                ? `<div class="muted small">Altitude: ${escapeHtml(Number(item.altitude).toFixed(1))} m</div>`
+                : ""}
+            </td>
+            <td>
+              <span class="status ${item.status === "NEW" ? "pending" : ""}">
+                ${escapeHtml(item.status || "—")}
+              </span>
+            </td>
+            <td>${escapeHtml(formatDate(item.createdAt))}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* ==========================================
+       5. USER TABLE
+       ========================================== */
+
+    function renderUsers() {
+      const tbody = document.getElementById("users-body");
+      const search = normalize(document.getElementById("user-search").value);
+
+      const filtered = userRows.filter(item => {
+        const text = [
+          item.name,
+          item.displayName,
+          item.email,
+          item.phone,
+          item.address,
+          item.id
+        ].join(" ");
+
+        return normalize(text).includes(search);
+      });
+
+      if (!filtered.length) {
+        renderEmpty(tbody, 5);
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => `
+        <tr>
+          <td>
+            <strong>${escapeHtml(item.name || item.displayName || "Unnamed user")}</strong>
+            <div class="muted small">${escapeHtml(item.id)}</div>
+          </td>
+          <td>${escapeHtml(item.email || "—")}</td>
+          <td>${escapeHtml(item.phone || "—")}</td>
+          <td>${escapeHtml(item.address || "—")}</td>
+          <td>${escapeHtml(formatDate(item.createdAt))}</td>
+        </tr>
+      `).join("");
+    }
+
+
     
