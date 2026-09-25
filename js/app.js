@@ -343,8 +343,25 @@ function showSuccess(submission) {
 
 document.getElementById("btn-success-close").addEventListener("click", () => {
   closeOverlay(overlaySuccess);
+
   lastSubmission = null;
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  selectedTypes = [];
+  currentCategory = null;
+
+  const foodWasteSection = document.getElementById("section-foodwaste");
+  const choiceSection = document.getElementById("section-choice");
+
+  // Reset main selection screen
+  foodWasteSection.classList.remove("is-hidden");
+  choiceSection.classList.remove("is-visible");
+
+  // Return to Food Waste section
+  setTimeout(() => {
+    foodWasteSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }, 100);
 });
 
 /* ============================================================
