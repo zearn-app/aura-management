@@ -61,8 +61,24 @@ function closeOverlay(el) {
 }
 
 document.querySelector(".btn-open-foodwaste").addEventListener("click", () => {
-  openOverlay(overlayFoodwaste);
+  const foodWasteSection = document.getElementById("section-foodwaste");
+  const choiceSection = document.getElementById("section-choice");
+
+  // Hide Food Waste card
+  foodWasteSection.classList.add("is-hidden");
+
+  // Show Fertilizer + Bio Gas cards
+  choiceSection.classList.add("is-visible");
+
+  // Scroll to the choices
+  setTimeout(() => {
+    choiceSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }, 150);
 });
+
 document.getElementById("btn-foodwaste-continue").addEventListener("click", () => {
   closeOverlay(overlayFoodwaste);
   document.getElementById("section-choice").scrollIntoView({ behavior: "smooth", block: "start" });
