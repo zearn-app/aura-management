@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public users may only CREATE a food-waste submission.
+    // They can never read, list, update, or delete requests —
+    // there is no login system, so nothing identifies "their own" document.
+    match /foodWasteRequests/{requestId} {
+
+      allow create: if
+        request.resource.data.keys().hasAll([
+          'requestId', 'category', 'selectedWasteTypes', 'email', 'phone',
+          'address', 'locationShared', 'latitude', 'longitude', 'altitude',
+          'createdAt', 'status'
+        ]) &&
+        request.resource.data.requestId is string &&
+        request.resource.data.requestId.matches('^AW-[0-9]{4}-[A-Z0-9]{6}$') &&
+        request.resource.data.category in ['Fertilizer', 'Bio Gas'] &&
+        request.resource.data.selectedWasteTypes is list &&
+        request.resource.data.selectedWasteTypes.size() > 0 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$') &&
+        request.resource.data.phone is string &&
+        request.resource.data.phone.size() > 0 &&
+        request.resource.data.address is string &&
+        request.resource.data.address.size() > 0 &&
+        request.resource.data.locationShared is bool &&
+        request.resource.data.status == 'NEW' &&
+        // createdAt must be the server timestamp, never a client-supplied value
+        request.resource.data.createdAt == request.time;
+
+      // Reading, listing, updating and deleting is reserved for
+      // Hari's admin tooling (a future authenticated pass), not the public site.
+      allow read, update, delete: if false;
+    }
+
+    // Product data foundation (Phase 2A). Products belong to Hari; the
+    // public site may only read products that are marked active — nothing
+    // about inactive/unpublished products is exposed. Creating, editing,
+    // deleting or (de)activating a product is reserved for Hari's
+    // authenticated management tooling, built in Phase 2B — not the
+    // public, unauthenticated site, so writes are closed here for now.
+    match /products/{productId} {
+      allow read: if resource.data.active == true;
+      allow create, update, delete: if false;
+    }
+
+    // Everything else is closed by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

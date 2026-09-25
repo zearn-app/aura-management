@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURA MANAGEMENT — Food Waste Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ SCREEN 1 : OPENING ============ -->
+<section id="screen-opening" class="screen screen--intro is-active">
+  <div class="soil-texture"></div>
+  <div class="intro-content">
+    <p class="intro-eyebrow">a cleaner cycle for what's left over</p>
+    <h1 class="intro-title">AURA<span>MANAGEMENT</span></h1>
+    <button id="btn-click-here" class="btn-organic" type="button">
+      <span>Click Here</span>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- ============ SCREEN 2 : WELCOME ============ -->
+<section id="screen-welcome" class="screen screen--intro">
+  <div class="soil-texture"></div>
+  <div class="intro-content">
+    <h2 class="welcome-title">Welcome to<br>Food Management</h2>
+  </div>
+</section>
+
+<!-- ============ SCREEN 3 : CREDITS ============ -->
+<section id="screen-credits" class="screen screen--intro">
+  <div class="soil-texture"></div>
+  <div class="intro-content credits-content">
+    <p class="credits-line credits-line--main">Designed by <strong>Hari</strong></p>
+    <p class="credits-line credits-line--sub">Work on Obra, Bharath and Pranesh</p>
+  </div>
+</section>
+
+<!-- ============ MAIN SITE ============ -->
+<main id="site-main" class="screen">
+
+  <!-- Scroll hint -->
+  <div id="scroll-hint" class="scroll-hint">
+    <span>Scroll Down</span>
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 4v16M6 14l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
+  <header class="hero">
+    <p class="hero-eyebrow">Aura Management</p>
+    <h2 class="hero-title">Turn today's scraps into<br>tomorrow's resource.</h2>
+    <p class="hero-sub">Tell us what organic waste you have — we'll route it toward fertilizer or biogas.</p>
+  </header>
+
+  <!-- FOOD WASTE CARD -->
+  <section id="section-foodwaste" class="panel">
+    <article class="card card--feature" id="card-foodwaste">
+      <div class="card-art card-art--foodwaste" aria-hidden="true">
+        <svg viewBox="0 0 200 160"><ellipse cx="100" cy="140" rx="90" ry="14" fill="var(--soil)"/><path d="M40 130 C30 90 55 55 95 50 C140 44 168 75 160 112 C154 138 120 132 100 130 C75 128 48 138 40 130Z" fill="var(--leaf)"/><path d="M75 60 C90 40 115 38 128 55" stroke="var(--leaf-dark)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="70" cy="95" r="10" fill="var(--clay)"/><circle cx="118" cy="88" r="14" fill="var(--clay-light)"/><path d="M55 110 q10 -14 24 -4" stroke="var(--leaf-dark)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M120 118 q14 -10 26 0" stroke="var(--leaf-dark)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="card-body">
+        <h3>Food Waste</h3>
+        <p>Vegetable peels, leftovers, fruit ends, rice, bread and more — every scrap has a second life.</p>
+        <button class="btn-outline btn-open-foodwaste" type="button">
+          <span>Click Here</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <!-- FOOD WASTE DETAIL (overlay) -->
+  <div id="overlay-foodwaste" class="overlay">
+    <div class="overlay-panel">
+      <div class="card-art card-art--foodwaste card-art--large" aria-hidden="true">
+        <svg viewBox="0 0 200 160"><ellipse cx="100" cy="140" rx="90" ry="14" fill="var(--soil)"/><path d="M40 130 C30 90 55 55 95 50 C140 44 168 75 160 112 C154 138 120 132 100 130 C75 128 48 138 40 130Z" fill="var(--leaf)"/><path d="M75 60 C90 40 115 38 128 55" stroke="var(--leaf-dark)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="70" cy="95" r="10" fill="var(--clay)"/><circle cx="118" cy="88" r="14" fill="var(--clay-light)"/></svg>
+      </div>
+      <h3>Food Waste</h3>
+      <p>Food waste includes leftover food, vegetable waste, fruit waste, rice waste, bread waste, tea waste, egg shells, leaves and other organic materials. Instead of throwing these materials away, they can be collected and converted into useful products such as natural fertilizer and renewable biogas.</p>
+      <button id="btn-foodwaste-continue" class="btn-organic" type="button">
+        <span>Continue</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- FERTILIZER / BIOGAS CHOICE -->
+  <section id="section-choice" class="panel">
+    <h2 class="panel-title">Where should it go?</h2>
+    <div class="choice-grid">
+      <article class="card card--choice" id="card-fertilizer" data-target="fertilizer">
+        <div class="card-art card-art--fertilizer" aria-hidden="true">
+          <svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><path d="M55 140 L60 90 Q60 78 72 78 L128 78 Q140 78 140 90 L145 140Z" fill="var(--clay)"/><path d="M60 90 L140 90" stroke="var(--clay-dark)" stroke-width="3"/><path d="M78 60 Q100 40 122 60" stroke="var(--leaf-dark)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="100" cy="50" r="10" fill="var(--leaf)"/><circle cx="85" cy="58" r="7" fill="var(--leaf)"/><circle cx="115" cy="58" r="7" fill="var(--leaf)"/></svg>
+        </div>
+        <div class="card-body">
+          <h3>Fertilizer</h3>
+          <p>Organic food waste can be processed into useful natural fertilizer and compost.</p>
+          <span class="card-link">Select waste types <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </div>
+      </article>
+
+      <article class="card card--choice" id="card-biogas" data-target="biogas">
+        <div class="card-art card-art--biogas" aria-hidden="true">
+          <svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><rect x="65" y="70" width="70" height="65" rx="10" fill="var(--moss)"/><circle cx="100" cy="70" r="30" fill="var(--moss-light)"/><path d="M92 50 q10 -10 4 -22 q14 8 10 24 q-2 10 -14 8Z" fill="var(--leaf)"/><rect x="94" y="128" width="12" height="16" fill="var(--clay-dark)"/></svg>
+        </div>
+        <div class="card-body">
+          <h3>Bio Gas</h3>
+          <p>Organic food waste can be converted into renewable biogas energy.</p>
+          <span class="card-link">Select waste types <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CHECKLIST OVERLAY (shared for fertilizer / biogas) -->
+  <div id="overlay-checklist" class="overlay">
+    <div class="overlay-panel overlay-panel--form">
+      <div class="card-art checklist-art" id="checklist-art" aria-hidden="true"></div>
+      <h3 id="checklist-title">Fertilizer</h3>
+      <p class="panel-sub">Select Organic Waste Types</p>
+      <form id="checklist-form" class="checklist" novalidate></form>
+      <p class="field-error" id="checklist-error">Please select at least one type of food waste.</p>
+      <button id="btn-checklist-next" class="btn-organic" type="button">
+        <span>Next</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- USER DETAILS OVERLAY -->
+  <div id="overlay-details" class="overlay">
+    <div class="overlay-panel overlay-panel--form">
+      <p class="panel-sub">You selected food waste</p>
+      <ul id="selected-summary" class="selected-summary"></ul>
+
+      <h3>Enter Your Details</h3>
+      <form id="details-form" class="details-form" novalidate>
+        <label class="field">
+          <span>Gmail Address</span>
+          <input type="email" id="input-email" placeholder="Enter your Gmail address" autocomplete="email">
+          <small class="field-error" data-for="email">Please enter your Gmail address.</small>
+        </label>
+
+        <label class="field">
+          <span>Phone Number</span>
+          <input type="tel" id="input-phone" placeholder="Enter your phone number" inputmode="tel" autocomplete="tel">
+          <small class="field-error" data-for="phone">Please enter your phone number.</small>
+        </label>
+
+        <label class="field">
+          <span>Address</span>
+          <textarea id="input-address" rows="3" placeholder="Enter your address"></textarea>
+          <small class="field-error" data-for="address">Please enter your address.</small>
+        </label>
+
+        <div class="field">
+          <span>Live Location (Optional)</span>
+          <button type="button" id="btn-share-location" class="btn-outline btn-location">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
+            <span id="location-btn-label">Share Live Location</span>
+          </button>
+          <small id="location-status" class="location-status"></small>
+        </div>
+
+        <button id="btn-submit" class="btn-organic btn-submit" type="submit">
+          <span>Submit</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <p class="field-error" id="submit-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- SUCCESS OVERLAY -->
+  <div id="overlay-success" class="overlay">
+    <div class="overlay-panel overlay-panel--success">
+      <div class="success-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Food Waste Details Submitted Successfully!</h3>
+      <p id="success-thanks">Thank you for sharing your food waste information.</p>
+
+      <div class="request-id-badge">
+        <span>Request ID</span>
+        <strong id="success-request-id"></strong>
+      </div>
+
+      <p class="panel-sub">Your Selected Waste</p>
+      <ul id="success-selected" class="selected-summary"></ul>
+
+      <p id="success-location" class="success-location"></p>
+      <div id="success-location-detail" class="success-location-detail"></div>
+
+      <div class="success-actions">
+        <button id="btn-view-solutions" class="btn-organic" type="button">
+          <span>View Available Solutions</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M5 12h13M13 6l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="btn-success-close" class="btn-outline" type="button">Submit another</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVAILABLE SOLUTIONS OVERLAY -->
+  <div id="overlay-solutions" class="overlay">
+    <div class="overlay-panel overlay-panel--solutions">
+      <h3>Available Solutions</h3>
+      <p id="solutions-status" class="solutions-status"></p>
+      <div id="solutions-list" class="product-grid"></div>
+      <button id="btn-solutions-close" class="btn-outline" type="button">Close</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p class="footer-mark">By TMARK Zoros</p>
+    <div class="footer-copy">
+      <p>© 2027 Zoros</p>
+      <p>All Rights Reserved.</p>
+    </div>
+  </footer>
+
+</main>
+
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

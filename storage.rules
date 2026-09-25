@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Product images (fertilizer, biogas, future products) live under
+    // /products/**. The public site only ever reads these URLs to render
+    // product cards — it never uploads anything.
+    match /products/{allPaths=**} {
+      allow read: if true;
+      // Uploading/replacing/removing product images is reserved for Hari's
+      // authenticated management tooling, built in Phase 2B.
+      allow write: if false;
+    }
+
+    // Everything else is closed by default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
