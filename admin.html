@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AURA Management — Admin</title>
-
   <style>
     :root {
       --bg: #0b1110;
@@ -18,7 +16,8 @@
       --accent-2: #c8e89a;
       --danger: #ff7777;
       --warning: #ffd166;
-      --shadow: 0 20px 60px rgba(0,0,0,.28);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      --radius: 18px;
     }
 
     * {
@@ -28,27 +27,14 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-      background:
-        radial-gradient(
-          circle at top left,
-          rgba(156,207,90,.10),
-          transparent 35%
-        ),
-        radial-gradient(
-          circle at bottom right,
-          rgba(84,145,112,.10),
-          transparent 35%
-        ),
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(156, 207, 90, 0.1), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(84, 145, 112, 0.1), transparent 35%),
         var(--bg);
-
       color: var(--text);
     }
 
-    button,
-    input {
+    button, input, select {
       font: inherit;
     }
 
@@ -60,10 +46,7 @@
       display: none !important;
     }
 
-    /* =========================
-       LOGIN
-       ========================= */
-
+    /* Login */
     #login-view {
       min-height: 100vh;
       display: grid;
@@ -74,11 +57,9 @@
     .login-card {
       width: min(430px, 100%);
       padding: 32px;
-
-      background: rgba(17,26,24,.94);
+      background: rgba(17, 26, 24, 0.92);
       border: 1px solid var(--line);
       border-radius: 26px;
-
       box-shadow: var(--shadow);
       backdrop-filter: blur(16px);
     }
@@ -93,28 +74,16 @@
     .brand-mark {
       width: 48px;
       height: 48px;
-
+      border-radius: 15px;
       display: grid;
       place-items: center;
-
-      border-radius: 15px;
-
-      background:
-        linear-gradient(
-          135deg,
-          var(--accent),
-          #557f45
-        );
-
+      background: linear-gradient(135deg, var(--accent), #557f45);
       color: #10170f;
       font-weight: 900;
       font-size: 22px;
     }
 
-    h1,
-    h2,
-    h3,
-    p {
+    h1, h2, h3, p {
       margin-top: 0;
     }
 
@@ -134,22 +103,17 @@
     .field label {
       display: block;
       margin-bottom: 8px;
-
       font-size: 13px;
       color: var(--muted);
     }
 
     .field input {
       width: 100%;
-
       padding: 13px 14px;
-
       border-radius: 12px;
       border: 1px solid var(--line);
-
       background: #0c1312;
       color: var(--text);
-
       outline: none;
     }
 
@@ -157,24 +121,18 @@
       border-color: var(--accent);
     }
 
-    .primary-btn,
-    .google-btn,
-    .logout-btn,
-    .tab-btn,
-    .refresh {
+    .primary-btn, .google-btn, .logout-btn, .tab-btn, .action-btn, .refresh {
+      border: 0;
       border-radius: 12px;
       padding: 12px 15px;
-      transition: .2s ease;
+      transition: 0.2s ease;
+      font-weight: 600;
     }
 
     .primary-btn {
       width: 100%;
-
-      border: 0;
-
       background: var(--accent);
       color: #0b1109;
-
       font-weight: 800;
     }
 
@@ -182,21 +140,11 @@
       transform: translateY(-1px);
     }
 
-    .primary-btn:disabled,
-    .google-btn:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-
     .google-btn {
       width: 100%;
       margin-top: 10px;
-
-      border: 0;
-
       background: #f4f7f6;
       color: #111;
-
       font-weight: 700;
     }
 
@@ -204,15 +152,12 @@
       display: flex;
       align-items: center;
       gap: 10px;
-
       color: var(--muted);
       font-size: 12px;
-
       margin: 18px 0;
     }
 
-    .divider::before,
-    .divider::after {
+    .divider:before, .divider:after {
       content: "";
       height: 1px;
       background: var(--line);
@@ -221,18 +166,13 @@
 
     .login-error {
       color: var(--danger);
-
       min-height: 20px;
       margin-top: 12px;
-
       font-size: 13px;
       line-height: 1.5;
     }
 
-    /* =========================
-       ADMIN APP
-       ========================= */
-
+    /* App */
     #admin-view {
       min-height: 100vh;
     }
@@ -241,18 +181,13 @@
       position: sticky;
       top: 0;
       z-index: 20;
-
       display: flex;
       justify-content: space-between;
       align-items: center;
-
       gap: 16px;
-
       padding: 14px 22px;
-
-      background: rgba(11,17,16,.88);
+      background: rgba(11, 17, 16, 0.88);
       border-bottom: 1px solid var(--line);
-
       backdrop-filter: blur(16px);
     }
 
@@ -265,7 +200,6 @@
     .topbar .brand-mark {
       width: 40px;
       height: 40px;
-
       border-radius: 12px;
       font-size: 18px;
     }
@@ -282,7 +216,6 @@
     .logout-btn {
       background: transparent;
       color: var(--text);
-
       border: 1px solid var(--line);
     }
 
@@ -300,7 +233,6 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-
       gap: 16px;
       margin-bottom: 22px;
     }
@@ -310,22 +242,17 @@
       margin: 4px 0 0;
     }
 
-    /* Stats */
-
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-
       gap: 14px;
       margin-bottom: 22px;
     }
 
     .stat {
       background: var(--panel);
-
       border: 1px solid var(--line);
       border-radius: 18px;
-
       padding: 20px;
     }
 
@@ -337,83 +264,65 @@
     .stat-value {
       font-size: 30px;
       font-weight: 850;
-
       margin-top: 7px;
     }
-
-    /* Tabs */
 
     .tabs {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-
       margin-bottom: 16px;
     }
 
     .tab-btn {
       background: var(--panel);
       border: 1px solid var(--line);
-
       color: var(--muted);
     }
 
     .tab-btn.active {
       background: var(--accent);
       border-color: var(--accent);
-
       color: #0b1109;
       font-weight: 800;
     }
 
-    /* Toolbar */
-
     .toolbar {
       display: flex;
       flex-wrap: wrap;
-
       gap: 10px;
-
       align-items: center;
       justify-content: space-between;
-
       margin-bottom: 14px;
     }
 
     .search {
       flex: 1;
       min-width: 230px;
-
       padding: 12px 14px;
-
       border-radius: 12px;
       border: 1px solid var(--line);
-
       background: var(--panel);
       color: var(--text);
-
       outline: none;
     }
 
-    .search:focus {
-      border-color: var(--accent);
-    }
-
     .refresh {
+      padding: 12px 15px;
+      border-radius: 12px;
       border: 1px solid var(--line);
-
       background: var(--panel);
       color: var(--text);
     }
 
-    /* Tables */
+    .refresh:hover {
+      border-color: var(--accent);
+    }
 
     .panel {
       background: var(--panel);
-
       border: 1px solid var(--line);
       border-radius: 20px;
-
       overflow: hidden;
     }
 
@@ -423,33 +332,23 @@
 
     table {
       width: 100%;
-
       border-collapse: collapse;
-
       min-width: 850px;
     }
 
-    th,
-    td {
+    th, td {
       padding: 14px 16px;
-
       text-align: left;
-
       border-bottom: 1px solid var(--line);
-
       vertical-align: top;
     }
 
     th {
       font-size: 12px;
-
       text-transform: uppercase;
-      letter-spacing: .05em;
-
+      letter-spacing: 0.05em;
       color: var(--muted);
-
-      background: rgba(255,255,255,.015);
-
+      background: rgba(255, 255, 255, 0.015);
       white-space: nowrap;
     }
 
@@ -465,31 +364,23 @@
       color: var(--muted);
     }
 
-    .small {
-      font-size: 12px;
-    }
-
     .status {
       display: inline-flex;
-
       padding: 5px 9px;
-
       border-radius: 999px;
-
-      background: rgba(156,207,90,.12);
+      background: rgba(156, 207, 90, 0.12);
       color: var(--accent-2);
-
       font-size: 12px;
       font-weight: 750;
     }
 
     .status.off {
-      background: rgba(255,119,119,.10);
+      background: rgba(255, 119, 119, 0.1);
       color: #ff9a9a;
     }
 
     .status.pending {
-      background: rgba(255,209,102,.10);
+      background: rgba(255, 209, 102, 0.1);
       color: var(--warning);
     }
 
@@ -501,24 +392,16 @@
 
     .chip {
       padding: 5px 8px;
-
       border-radius: 8px;
-
       background: var(--panel-2);
       border: 1px solid var(--line);
-
       color: #d8e3df;
-
       font-size: 12px;
     }
 
-    .empty,
-    .loading,
-    .error {
+    .empty, .loading, .error {
       padding: 35px 20px;
-
       text-align: center;
-
       color: var(--muted);
     }
 
@@ -529,38 +412,33 @@
     .product-thumb {
       width: 58px;
       height: 58px;
-
       border-radius: 12px;
-
       object-fit: cover;
-
       background: var(--panel-2);
-
       border: 1px solid var(--line);
+    }
+
+    .small {
+      font-size: 12px;
     }
 
     .notice {
       margin-bottom: 16px;
-
       padding: 12px 14px;
-
       border-radius: 12px;
-
-      background: rgba(156,207,90,.08);
-      border: 1px solid rgba(156,207,90,.2);
-
+      background: rgba(156, 207, 90, 0.08);
+      border: 1px solid rgba(156, 207, 90, 0.2);
       color: #d9e9d0;
-
       font-size: 13px;
     }
 
-    @media(max-width:900px) {
+    @media (max-width: 900px) {
       .stats {
         grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    @media(max-width:600px) {
+    @media (max-width: 600px) {
       .topbar {
         padding: 12px 14px;
       }
@@ -598,626 +476,343 @@
     }
   </style>
 </head>
-
 <body>
-
-<!-- =====================================================
-     LOGIN
-     ===================================================== -->
-
-<section id="login-view">
-
-  <div class="login-card">
-
-    <div class="brand">
-
-      <div class="brand-mark">
-        A
-      </div>
-
-      <div>
-        <strong>AURA</strong>
-
-        <div class="muted small">
-          Management Admin
+  <!-- LOGIN VIEW -->
+  <section id="login-view">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <strong>AURA</strong>
+          <div class="muted small">Management Admin</div>
         </div>
       </div>
 
+      <h1>Admin Login</h1>
+      <p class="subtitle">Sign in to view food-waste requests, users and available products.</p>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="login-email">Admin Email</label>
+          <input id="login-email" type="email" autocomplete="email" required />
+        </div>
+
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" autocomplete="current-password" required />
+        </div>
+
+        <button class="primary-btn" type="submit">Login</button>
+      </form>
+
+      <div class="divider">OR</div>
+
+      <button class="google-btn" id="google-login" type="button">Continue with Google</button>
+
+      <div id="login-error" class="login-error"></div>
     </div>
+  </section>
 
-    <h1>Admin Login</h1>
-
-    <p class="subtitle">
-      Sign in to view food-waste requests, users and available products.
-    </p>
-
-    <form id="login-form">
-
-      <div class="field">
-
-        <label for="login-email">
-          Admin Email
-        </label>
-
-        <input
-          id="login-email"
-          type="email"
-          autocomplete="email"
-          required
-        >
-
-      </div>
-
-      <div class="field">
-
-        <label for="login-password">
-          Password
-        </label>
-
-        <input
-          id="login-password"
-          type="password"
-          autocomplete="current-password"
-          required
-        >
-
-      </div>
-
-      <button
-        class="primary-btn"
-        id="login-btn"
-        type="submit"
-      >
-        Login
-      </button>
-
-    </form>
-
-    <div class="divider">
-      OR
-    </div>
-
-    <button
-      class="google-btn"
-      id="google-login"
-      type="button"
-    >
-      Continue with Google
-    </button>
-
-    <div
-      id="login-error"
-      class="login-error"
-    ></div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     ADMIN DASHBOARD
-     ===================================================== -->
-
-<section id="admin-view" class="hidden">
-
-  <header class="topbar">
-
-    <div class="topbar-left">
-
-      <div class="brand-mark">
-        A
-      </div>
-
-      <div>
-
-        <div class="admin-title">
-          AURA Management
+  <!-- ADMIN VIEW -->
+  <section id="admin-view" class="hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand-mark">A</div>
+        <div>
+          <div class="admin-title">AURA Management</div>
+          <div class="admin-email" id="admin-email"></div>
         </div>
-
-        <div
-          class="admin-email"
-          id="admin-email"
-        ></div>
-
       </div>
+      <button id="logout-btn" class="logout-btn" type="button">Logout</button>
+    </header>
 
-    </div>
-
-    <button
-      id="logout-btn"
-      class="logout-btn"
-      type="button"
-    >
-      Logout
-    </button>
-
-  </header>
-
-
-  <main class="container">
-
-    <div class="welcome">
-
-      <div>
-
-        <h1>
-          Admin Dashboard
-        </h1>
-
-        <p>
-          Monitor users, food-waste requests and products.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div
-      id="admin-notice"
-      class="notice hidden"
-    ></div>
-
-
-    <!-- STATISTICS -->
-
-    <section class="stats">
-
-      <div class="stat">
-
-        <div class="stat-label">
-          Users
+    <main class="container">
+      <div class="welcome">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>Monitor users, food-waste requests and products.</p>
         </div>
-
-        <div
-          class="stat-value"
-          id="stat-users"
-        >
-          —
-        </div>
-
       </div>
 
+      <div id="admin-notice" class="notice hidden"></div>
 
-      <div class="stat">
-
-        <div class="stat-label">
-          Requests
+      <section class="stats">
+        <div class="stat">
+          <div class="stat-label">Users</div>
+          <div class="stat-value" id="stat-users">—</div>
         </div>
-
-        <div
-          class="stat-value"
-          id="stat-requests"
-        >
-          —
+        <div class="stat">
+          <div class="stat-label">Requests</div>
+          <div class="stat-value" id="stat-requests">—</div>
         </div>
-
-      </div>
-
-
-      <div class="stat">
-
-        <div class="stat-label">
-          Products
+        <div class="stat">
+          <div class="stat-label">Products</div>
+          <div class="stat-value" id="stat-products">—</div>
         </div>
-
-        <div
-          class="stat-value"
-          id="stat-products"
-        >
-          —
+        <div class="stat">
+          <div class="stat-label">Active Products</div>
+          <div class="stat-value" id="stat-active-products">—</div>
         </div>
+      </section>
 
-      </div>
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="requests">Food Waste Requests</button>
+        <button class="tab-btn" data-tab="users">Users</button>
+        <button class="tab-btn" data-tab="products">Products</button>
+      </nav>
 
-
-      <div class="stat">
-
-        <div class="stat-label">
-          Active Products
+      <!-- REQUESTS TAB -->
+      <section id="tab-requests" class="tab-panel">
+        <div class="toolbar">
+          <input class="search" id="request-search" placeholder="Search request ID, email, phone, category..." />
+          <button class="refresh" data-refresh="requests">Refresh</button>
         </div>
-
-        <div
-          class="stat-value"
-          id="stat-active-products"
-        >
-          —
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Request</th>
+                  <th>User Contact</th>
+                  <th>Category</th>
+                  <th>Waste Types</th>
+                  <th>Address</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="requests-body"></tbody>
+            </table>
+          </div>
         </div>
+      </section>
 
-      </div>
-
-    </section>
-
-
-    <!-- TABS -->
-
-    <nav class="tabs">
-
-      <button
-        class="tab-btn active"
-        data-tab="requests"
-      >
-        Food Waste Requests
-      </button>
-
-      <button
-        class="tab-btn"
-        data-tab="users"
-      >
-        Users
-      </button>
-
-      <button
-        class="tab-btn"
-        data-tab="products"
-      >
-        Products
-      </button>
-
-    </nav>
-
-
-    <!-- =================================================
-         REQUESTS
-         ================================================= -->
-
-    <section
-      id="tab-requests"
-      class="tab-panel"
-    >
-
-      <div class="toolbar">
-
-        <input
-          class="search"
-          id="request-search"
-          placeholder="Search request ID, email, phone, category..."
-        >
-
-        <button
-          class="refresh"
-          data-refresh="requests"
-        >
-          Refresh
-        </button>
-
-      </div>
-
-
-      <div class="panel">
-
-        <div class="table-wrap">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>
-                  Request
-                </th>
-
-                <th>
-                  User Contact
-                </th>
-
-                <th>
-                  Category
-                </th>
-
-                <th>
-                  Waste Types
-                </th>
-
-                <th>
-                  Address
-                </th>
-
-                <th>
-                  Location
-                </th>
-
-                <th>
-                  Status
-                </th>
-
-                <th>
-                  Created
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="requests-body"></tbody>
-
-          </table>
-
+      <!-- USERS TAB -->
+      <section id="tab-users" class="tab-panel hidden">
+        <div class="toolbar">
+          <input class="search" id="user-search" placeholder="Search name, email, phone..." />
+          <button class="refresh" data-refresh="users">Refresh</button>
         </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =================================================
-         USERS
-         ================================================= -->
-
-    <section
-      id="tab-users"
-      class="tab-panel hidden"
-    >
-
-      <div class="toolbar">
-
-        <input
-          class="search"
-          id="user-search"
-          placeholder="Search name, email, phone..."
-        >
-
-        <button
-          class="refresh"
-          data-refresh="users"
-        >
-          Refresh
-        </button>
-
-      </div>
-
-
-      <div class="panel">
-
-        <div class="table-wrap">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>
-                  User
-                </th>
-
-                <th>
-                  Email
-                </th>
-
-                <th>
-                  Phone
-                </th>
-
-                <th>
-                  Address
-                </th>
-
-                <th>
-                  Created
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="users-body"></tbody>
-
-          </table>
-
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Address</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="users-body"></tbody>
+            </table>
+          </div>
         </div>
+      </section>
 
-      </div>
-
-    </section>
-
-
-    <!-- =================================================
-         PRODUCTS
-         ================================================= -->
-
-    <section
-      id="tab-products"
-      class="tab-panel hidden"
-    >
-
-      <div class="toolbar">
-
-        <input
-          class="search"
-          id="product-search"
-          placeholder="Search product, category, waste type..."
-        >
-
-        <button
-          class="refresh"
-          data-refresh="products"
-        >
-          Refresh
-        </button>
-
-      </div>
-
-
-      <div class="panel">
-
-        <div class="table-wrap">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>
-                  Product
-                </th>
-
-                <th>
-                  Category
-                </th>
-
-                <th>
-                  Description
-                </th>
-
-                <th>
-                  Suitable Waste
-                </th>
-
-                <th>
-                  Image
-                </th>
-
-                <th>
-                  Status
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody id="products-body"></tbody>
-
-          </table>
-
+      <!-- PRODUCTS TAB -->
+      <section id="tab-products" class="tab-panel hidden">
+        <div class="toolbar">
+          <input class="search" id="product-search" placeholder="Search product, category, waste type..." />
+          <button class="refresh" data-refresh="products">Refresh</button>
         </div>
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Suitable Waste</th>
+                  <th>Image</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="products-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </section>
 
-      </div>
+  <script type="module">
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      signInWithPopup,
+      GoogleAuthProvider,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
-    </section>
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  </main>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 
-</section>
+    // ========== FIREBASE INIT ==========
+    const firebaseConfig = {
+      apiKey: "AIzaSyBOU5TRy80JkKhWEwbNIe9Ei5-e_QztN3k",
+      authDomain: "zearn-app.firebaseapp.com",
+      projectId: "zearn-app",
+      storageBucket: "zearn-app.firebasestorage.app",
+      messagingSenderId: "212045636123",
+      appId: "1:212045636123:web:495ba5939bdc5c89050ebe",
+      measurementId: "G-GMLDVHFFLN"
+    };
 
+    let app, auth, db, googleProvider;
 
-<!-- =====================================================
-     FIREBASE / ADMIN JAVASCRIPT
-     ===================================================== -->
-
-<script type="module">
-
-  /* =====================================================
-     FIREBASE IMPORTS
-     ===================================================== */
-
-  import "./js/firebase-config.js";
-
-  import {
-    getApp,
-    getApps
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-
-  import {
-    getAuth,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-
-  import {
-    getFirestore,
-    collection,
-    getDocs,
-    query,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-
-  /* =====================================================
-     ADMIN EMAIL
-     ===================================================== */
-
-  const ADMIN_EMAILS = [
-    "hari066@gmail.com"
-  ];
-
-
-  /* =====================================================
-     DOM
-     ===================================================== */
-
-  const loginView =
-    document.getElementById("login-view");
-
-  const adminView =
-    document.getElementById("admin-view");
-
-  const loginForm =
-    document.getElementById("login-form");
-
-  const loginBtn =
-    document.getElementById("login-btn");
-
-  const googleLogin =
-    document.getElementById("google-login");
-
-  const loginError =
-    document.getElementById("login-error");
-
-  const adminEmail =
-    document.getElementById("admin-email");
-
-  const adminNotice =
-    document.getElementById("admin-notice");
-
-  const logoutBtn =
-    document.getElementById("logout-btn");
-
-
-  /* =====================================================
-     FIREBASE INITIALIZATION
-     ===================================================== */
-
-  let app;
-  let auth;
-  let db;
-  let googleProvider;
-
-
-  try {
-
-    if (getApps().length === 0) {
-
-      throw new Error(
-        "Firebase app was not initialized."
-      );
-
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      googleProvider = new GoogleAuthProvider();
+      console.log("✅ Firebase initialized successfully");
+    } catch (error) {
+      console.error("❌ Firebase init error:", error);
+      document.getElementById("login-error").textContent = "Firebase initialization failed. Check console.";
     }
 
-    app = getApp();
+    // ========== ADMIN EMAIL CHECK ==========
+    const ADMIN_EMAILS = ["hari066@gmail.com"];
 
-    auth = getAuth(app);
+    function isAdmin(user) {
+      if (!user || !user.email) return false;
+      const email = user.email.toLowerCase().trim();
+      return ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email);
+    }
 
-    db = getFirestore(app);
+    // ========== UI ELEMENTS ==========
+    const loginView = document.getElementById("login-view");
+    const adminView = document.getElementById("admin-view");
+    const loginForm = document.getElementById("login-form");
+    const googleLogin = document.getElementById("google-login");
+    const loginError = document.getElementById("login-error");
+    const adminEmail = document.getElementById("admin-email");
+    const logoutBtn = document.getElementById("logout-btn");
 
-    googleProvider =
-      new GoogleAuthProvider();
+    // ========== AUTH HANDLERS ==========
+    function showLoginError(message) {
+      loginError.textContent = message || "";
+    }
 
-    console.log(
-      "AURA Admin Firebase initialized."
-    );
+    async function rejectNonAdmin(user) {
+      const email = user?.email || "Unknown";
+      showLoginError(`Account "${email}" is not authorized for AURA admin.`);
+      console.log("❌ Unauthorized:", email);
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
-  } catch (error) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      showLoginError("");
 
-    console.error(
-      "Firebase initialization error:",
-      error
-    );
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
 
-    loginError.textContent =
-      "Firebase could not start. Check js/firebase-config.js.";
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        if (!isAdmin(result.user)) {
+          await rejectNonAdmin(result.user);
+        }
+      } catch (error) {
+        const messages = {
+          "auth/invalid-credential": "Invalid email or password.",
+          "auth/invalid-email": "Please enter a valid email address.",
+          "auth/user-not-found": "No account exists with this email.",
+          "auth/too-many-requests": "Too many attempts. Please try again later."
+        };
+        showLoginError(messages[error.code] || "Login failed. Please try again.");
+      }
+    });
 
-  }
+    googleLogin.addEventListener("click", async () => {
+      showLoginError("");
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        if (!isAdmin(result.user)) {
+          await rejectNonAdmin(result.user);
+        }
+      } catch (error) {
+        showLoginError(
+          error.code === "auth/popup-closed-by-user"
+            ? "Google login was cancelled."
+            : "Google login failed. Please try again."
+        );
+      }
+    });
 
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
 
-  /* =====================================================
-     ADMIN CHECK
-     ===================================================== */
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        loginView.classList.remove("hidden");
+        adminView.classList.add("hidden");
+        return;
+      }
 
-  
+      if (!isAdmin(user)) {
+        await rejectNonAdmin(user);
+        return;
+      }
+
+      loginView.classList.add("hidden");
+      adminView.classList.remove("hidden");
+      adminEmail.textContent = user.email || "";
+      await loadDashboard();
+    });
+
+    // ========== HELPERS ==========
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      try {
+        const date = typeof value?.toDate === "function" ? value.toDate() : new Date(value);
+        if (Number.isNaN(date.getTime())) return "—";
+        return date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+      } catch {
+        return "—";
+      }
+    }
+
+    function normalize(value) {
+      return String(value ?? "").toLowerCase();
+    }
+
+    function renderEmpty(tbody, colspan) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="empty">No records found.</div></td></tr>`;
+    }
+
+    function renderLoading(tbody, colspan) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="loading">Loading…</div></td></tr>`;
+    }
+
+    function renderError(tbody, colspan, message) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}"><div class="error">${escapeHtml(message)}</div></td></tr>`;
+    }
+
+    
