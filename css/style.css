@@ -638,6 +638,31 @@ svg {
   word-break: break-all;
 }
 
+.success-contact-message {
+  font-size: 1rem;
+  color: var(--accent-dark);
+  font-weight: 600;
+  margin: 1rem 0 2rem !important;
+}
+
+.success-credits {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.success-credits p {
+  color: var(--text-light);
+  margin: 0.5rem 0;
+}
+
+.success-credits strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .success-actions {
   display: flex;
   flex-direction: column;
@@ -806,4 +831,3 @@ svg {
     grid-template-columns: 1fr;
   }
 }
-
