@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // ============================================================
 // FIREBASE CONFIG
@@ -418,77 +418,10 @@ function initApp() {
   }
 
   // ========== SUCCESS OVERLAY ACTIONS ==========
-  const btnViewSolutions = document.getElementById("btn-view-solutions");
-  if (btnViewSolutions) {
-    btnViewSolutions.addEventListener("click", () => {
-      if (successOverlay) successOverlay.classList.remove("active");
-      loadAndShowSolutions();
-    });
-  }
-
   const btnSuccessClose = document.getElementById("btn-success-close");
   if (btnSuccessClose) {
     btnSuccessClose.addEventListener("click", () => {
       if (successOverlay) successOverlay.classList.remove("active");
-      resetFlow();
-    });
-  }
-
-  // ========== SOLUTIONS OVERLAY ==========
-  const solutionsOverlay = document.getElementById("overlay-solutions");
-  const solutionsList = document.getElementById("solutions-list");
-  const solutionsStatus = document.getElementById("solutions-status");
-
-  async function loadAndShowSolutions() {
-    if (solutionsList) {
-      solutionsList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Loading solutions...</div>';
-    }
-    if (solutionsOverlay) solutionsOverlay.classList.add("active");
-
-    try {
-      const productsRef = collection(db, "products");
-      const q = query(productsRef);
-      const snapshot = await getDocs(q);
-
-      const products = [];
-      snapshot.forEach(doc => {
-        products.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-
-      if (products.length === 0) {
-        if (solutionsStatus) solutionsStatus.textContent = "No solutions available right now.";
-        if (solutionsList) solutionsList.innerHTML = "";
-        return;
-      }
-
-      if (solutionsStatus) solutionsStatus.textContent = `Found ${products.length} solution(s) for your waste type:`;
-      if (solutionsList) {
-        solutionsList.innerHTML = products
-          .map(product => `
-            <div class="product-card">
-              ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.productName}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">` : ""}
-              <h4>${product.productName || "Untitled"}</h4>
-              <p>${product.description || "No description"}</p>
-              <div class="product-price">₹${product.price || "N/A"}</div>
-              <span class="status ${product.active ? "" : "off"}">${product.active ? "ACTIVE" : "INACTIVE"}</span>
-            </div>
-          `)
-          .join("");
-      }
-    } catch (error) {
-      console.error("❌ Error loading solutions:", error);
-      if (solutionsStatus) solutionsStatus.textContent = "Error loading solutions. Please try again.";
-      if (solutionsList) solutionsList.innerHTML = "";
-    }
-  }
-
-  const btnSolutionsClose = document.getElementById("btn-solutions-close");
-  if (btnSolutionsClose) {
-    btnSolutionsClose.addEventListener("click", () => {
-      if (solutionsOverlay) solutionsOverlay.classList.remove("active");
       resetFlow();
     });
   }
