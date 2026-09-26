@@ -590,13 +590,22 @@ function isAdmin(user) {
     }
 
     async function rejectNonAdmin(user) {
-      showLoginError("This account is not authorized to access the AURA admin dashboard.");
-      try {
-        await signOut(auth);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+
+  const signedInEmail = user?.email || "Unknown email";
+
+  showLoginError(
+    `Account "${signedInEmail}" is not authorized for the AURA admin dashboard.`
+  );
+
+  console.log("❌ Unauthorized Firebase account:", signedInEmail);
+  console.log("✅ Allowed account:", ADMIN_EMAILS);
+
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.error(e);
+  }
+}
 
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
