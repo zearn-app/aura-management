@@ -1,437 +1,450 @@
-import { db } from "./firebase-config.js";
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-/* ============================================================
-   1. OPENING → WELCOME → CREDITS → MAIN SITE sequence
-   ============================================================ */
-const screenOpening = document.getElementById("screen-opening");
-const screenWelcome = document.getElementById("screen-welcome");
-const screenCredits = document.getElementById("screen-credits");
-const siteMain = document.getElementById("site-main");
-const scrollHint = document.getElementById("scroll-hint");
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBOU5TRy80JkKhWEwbNIe9Ei5-e_QztN3k",
+  authDomain: "zearn-app.firebaseapp.com",
+  projectId: "zearn-app",
+  storageBucket: "zearn-app.firebasestorage.app",
+  messagingSenderId: "212045636123",
+  appId: "1:212045636123:web:495ba5939bdc5c89050ebe",
+  measurementId: "G-GMLDVHFFLN"
+};
 
-function goTo(fromEl, toEl, { auto = false, delay = 450 } = {}) {
-  fromEl.classList.add("is-leaving");
-  setTimeout(() => {
-    fromEl.classList.remove("is-active", "is-leaving");
-    toEl.classList.add("is-active");
-  }, delay);
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-document.getElementById("btn-click-here").addEventListener("click", () => {
-  goTo(screenOpening, screenWelcome);
-  // Welcome screen auto-advances after ~3 seconds
-  setTimeout(() => {
-    goTo(screenWelcome, screenCredits);
-    setTimeout(() => {
-      screenCredits.classList.add("is-leaving");
-      setTimeout(() => {
-        screenCredits.classList.remove("is-active", "is-leaving");
-        siteMain.classList.add("is-active");
-        document.body.style.overflow = "";
-      }, 500);
-    }, 2600); // credits screen dwell time
-  }, 3000); // welcome screen dwell time
-});
+console.log("✅ Firebase initialized");
 
-// Hide scroll hint once the visitor starts scrolling
-window.addEventListener("scroll", () => {
-  scrollHint.classList.toggle("is-hidden", window.scrollY > 80);
-}, { passive: true });
-
-/* ============================================================
-   2. FOOD WASTE detail overlay
-   ============================================================ */
-const overlayFoodwaste = document.getElementById("overlay-foodwaste");
-
-function openOverlay(el) {
-  el.classList.add("is-active");
-  document.body.style.overflow = "hidden";
-}
-function closeOverlay(el) {
-  el.classList.remove("is-active");
-  document.body.style.overflow = "";
-}
-
-document.querySelector(".btn-open-foodwaste").addEventListener("click", () => {
-  const foodWasteSection = document.getElementById("section-foodwaste");
-  const choiceSection = document.getElementById("section-choice");
-
-  // Hide Food Waste card
-  foodWasteSection.classList.add("is-hidden");
-
-  // Show Fertilizer + Bio Gas cards
-  choiceSection.classList.add("is-visible");
-
-  // Scroll to the choices
-  setTimeout(() => {
-    choiceSection.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  }, 150);
-});
-
-document.getElementById("btn-foodwaste-continue").addEventListener("click", () => {
-  closeOverlay(overlayFoodwaste);
-  document.getElementById("section-choice").scrollIntoView({ behavior: "smooth", block: "start" });
-});
-
-/* ============================================================
-   3. FERTILIZER / BIO GAS checklist overlay
-   ============================================================ */
-const WASTE_OPTIONS = {
+// ============================================================
+// WASTE TYPES BY CATEGORY
+// ============================================================
+const wasteTypesByCategory = {
   fertilizer: [
-    "Tea Waste", "Vegetable Waste", "Rice Waste", "Bread Waste",
-    "Egg Shell Waste", "Leaf Waste", "Fruit Waste", "Food Leftovers",
-    "Other Organic Waste"
+    "Vegetable peels",
+    "Fruit waste",
+    "Rice & grains",
+    "Bread & bakery",
+    "Tea leaves",
+    "Coffee grounds",
+    "Egg shells",
+    "Leaves & grass"
   ],
   biogas: [
-    "Vegetable Waste", "Fruit Waste", "Rice Waste", "Food Leftovers",
-    "Bread Waste", "Tea Waste", "Egg Shell Waste", "Leaf Waste",
-    "All Types of Organic Waste"
+    "Vegetable peels",
+    "Fruit waste",
+    "Rice & grains",
+    "Meat waste",
+    "Dairy waste",
+    "Oil & grease",
+    "Paper & cardboard",
+    "Plant waste"
   ]
 };
 
-// Internal keys ("fertilizer"/"biogas") map to the public-facing category
-// label stored in Firestore and used to match against product documents.
-const CATEGORY_LABELS = {
-  fertilizer: "Fertilizer",
-  biogas: "Bio Gas"
+// ============================================================
+// SVG TEMPLATES
+// ============================================================
+const svgTemplates = {
+  fertilizer: '<svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><path d="M55 140 L60 90 Q60 78 72 78 L128 78 Q140 78 140 90 L145 140Z" fill="var(--clay)"/><path d="M60 90 L140 90" stroke="var(--clay-dark)" stroke-width="3"/><path d="M78 60 Q100 40 122 60" stroke="var(--leaf-dark)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="100" cy="50" r="10" fill="var(--leaf)"/><circle cx="85" cy="58" r="7" fill="var(--leaf)"/><circle cx="115" cy="58" r="7" fill="var(--leaf)"/></svg>',
+  biogas: '<svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><rect x="65" y="70" width="70" height="65" rx="10" fill="var(--moss)"/><circle cx="100" cy="70" r="30" fill="var(--moss-light)"/><path d="M92 50 q10 -10 4 -22 q14 8 10 24 q-2 10 -14 8Z" fill="var(--leaf)"/><rect x="94" y="128" width="12" height="16" fill="var(--clay-dark)"/></svg>'
 };
 
-const overlayChecklist = document.getElementById("overlay-checklist");
-const checklistTitle = document.getElementById("checklist-title");
-const checklistForm = document.getElementById("checklist-form");
-const checklistError = document.getElementById("checklist-error");
-const checklistArt = document.getElementById("checklist-art");
+// ============================================================
+// STATE
+// ============================================================
+let currentCategory = null;
+let selectedWasteTypes = [];
+let userLocation = null;
+let userLocationShared = false;
 
-const ART = {
-  fertilizer: `<svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><path d="M55 140 L60 90 Q60 78 72 78 L128 78 Q140 78 140 90 L145 140Z" fill="var(--clay)"/><path d="M60 90 L140 90" stroke="var(--clay-dark)" stroke-width="3"/><path d="M78 60 Q100 40 122 60" stroke="var(--leaf-dark)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="100" cy="50" r="10" fill="var(--leaf)"/></svg>`,
-  biogas: `<svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><rect x="65" y="70" width="70" height="65" rx="10" fill="var(--moss)"/><circle cx="100" cy="70" r="30" fill="var(--moss-light)"/><path d="M92 50 q10 -10 4 -22 q14 8 10 24 q-2 10 -14 8Z" fill="var(--leaf)"/></svg>`
+// ============================================================
+// SCREEN TRANSITIONS
+// ============================================================
+const screens = {
+  opening: document.getElementById("screen-opening"),
+  welcome: document.getElementById("screen-welcome"),
+  credits: document.getElementById("screen-credits"),
+  main: document.getElementById("site-main")
 };
 
-let currentCategory = null; // "fertilizer" | "biogas"
-let selectedTypes = [];
+let screenIndex = 0;
+const screenOrder = ["opening", "welcome", "credits", "main"];
 
-function openChecklist(category) {
-  currentCategory = category;
-  checklistTitle.textContent = category === "fertilizer" ? "Fertilizer" : "Bio Gas";
-  checklistArt.innerHTML = ART[category];
-  checklistForm.innerHTML = WASTE_OPTIONS[category].map((label, i) => `
-    <label>
-      <input type="checkbox" name="waste" value="${label}" id="waste-${category}-${i}">
-      <span>${label}</span>
-    </label>
-  `).join("");
-  checklistError.classList.remove("is-visible");
-  openOverlay(overlayChecklist);
+function showScreen(name) {
+  Object.values(screens).forEach(screen => screen?.classList.remove("is-active"));
+  screens[name]?.classList.add("is-active");
 }
 
-document.getElementById("card-fertilizer").addEventListener("click", () => openChecklist("fertilizer"));
-document.getElementById("card-biogas").addEventListener("click", () => openChecklist("biogas"));
+function nextScreen() {
+  screenIndex++;
+  if (screenIndex < screenOrder.length) {
+    showScreen(screenOrder[screenIndex]);
+  }
+}
 
-document.getElementById("btn-checklist-next").addEventListener("click", () => {
-  const checked = Array.from(checklistForm.querySelectorAll("input[name='waste']:checked"))
-    .map(i => i.value);
+document.getElementById("btn-click-here").addEventListener("click", () => {
+  nextScreen();
+});
 
-  if (checked.length === 0) {
-    checklistError.classList.add("is-visible");
+// ============================================================
+// SCROLL HINT
+// ============================================================
+const scrollHint = document.getElementById("scroll-hint");
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 100) {
+    scrollHint?.classList.add("hidden");
+  } else {
+    scrollHint?.classList.remove("hidden");
+  }
+});
+
+// ============================================================
+// FOOD WASTE FLOW
+// ============================================================
+const foodWasteCard = document.getElementById("card-foodwaste");
+const choiceSection = document.getElementById("section-choice");
+const foodWasteOverlay = document.getElementById("overlay-foodwaste");
+
+document.querySelector(".btn-open-foodwaste").addEventListener("click", () => {
+  foodWasteOverlay.classList.add("active");
+});
+
+document.getElementById("btn-foodwaste-continue").addEventListener("click", () => {
+  foodWasteOverlay.classList.remove("active");
+  // Hide food waste card, show choice cards
+  foodWasteCard.style.display = "none";
+  choiceSection.style.display = "block";
+  // Scroll to choice section
+  setTimeout(() => {
+    choiceSection.scrollIntoView({ behavior: "smooth" });
+  }, 300);
+});
+
+// ============================================================
+// FERTILIZER / BIOGAS CHOICE
+// ============================================================
+document.querySelectorAll(".card--choice").forEach(card => {
+  card.addEventListener("click", () => {
+    const target = card.getAttribute("data-target");
+    currentCategory = target;
+    openChecklistOverlay(target);
+  });
+});
+
+// ============================================================
+// CHECKLIST OVERLAY
+// ============================================================
+const checklistOverlay = document.getElementById("overlay-checklist");
+const checklistForm = document.getElementById("checklist-form");
+const checklistTitle = document.getElementById("checklist-title");
+const checklistArt = document.getElementById("checklist-art");
+const checklistError = document.getElementById("checklist-error");
+
+function openChecklistOverlay(category) {
+  currentCategory = category;
+  selectedWasteTypes = [];
+
+  // Update title
+  checklistTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+
+  // Update art
+  checklistArt.innerHTML = svgTemplates[category];
+
+  // Build checklist
+  checklistForm.innerHTML = "";
+  wasteTypesByCategory[category].forEach((wasteType, index) => {
+    const id = `waste-${index}`;
+    checklistForm.innerHTML += `
+      <label class="field">
+        <input type="checkbox" id="${id}" value="${wasteType}">
+        <span>${wasteType}</span>
+      </label>
+    `;
+  });
+
+  checklistError.classList.remove("show");
+  checklistOverlay.classList.add("active");
+}
+
+document.getElementById("btn-checklist-buy").addEventListener("click", () => {
+  selectedWasteTypes = [];
+  checklistForm.querySelectorAll("input[type='checkbox']:checked").forEach(checkbox => {
+    selectedWasteTypes.push(checkbox.value);
+  });
+
+  if (selectedWasteTypes.length === 0) {
+    checklistError.classList.add("show");
     return;
   }
 
-  selectedTypes = checked;
-  checklistError.classList.remove("is-visible");
-  closeOverlay(overlayChecklist);
+  checklistOverlay.classList.remove("active");
   openDetailsOverlay();
 });
 
-/* ============================================================
-   4. USER DETAILS overlay + validation
-   ============================================================ */
-const overlayDetails = document.getElementById("overlay-details");
-const selectedSummary = document.getElementById("selected-summary");
+// ============================================================
+// DETAILS OVERLAY
+// ============================================================
+const detailsOverlay = document.getElementById("overlay-details");
 const detailsForm = document.getElementById("details-form");
-const inputEmail = document.getElementById("input-email");
-const inputPhone = document.getElementById("input-phone");
-const inputAddress = document.getElementById("input-address");
-const submitBtn = document.getElementById("btn-submit");
+const selectedSummary = document.getElementById("selected-summary");
+const btnShareLocation = document.getElementById("btn-share-location");
+const locationBtnLabel = document.getElementById("location-btn-label");
+const locationStatus = document.getElementById("location-status");
 const submitError = document.getElementById("submit-error");
 
 function openDetailsOverlay() {
-  selectedSummary.innerHTML = selectedTypes.map(t => `<li>✓ ${t}</li>`).join("");
-  openOverlay(overlayDetails);
+  // Show selected waste types
+  selectedSummary.innerHTML = selectedWasteTypes
+    .map(type => `<li>${type}</li>`)
+    .join("");
+
+  detailsForm.reset();
+  userLocation = null;
+  userLocationShared = false;
+  locationBtnLabel.textContent = "Share Live Location";
+  locationStatus.classList.remove("show");
+
+  submitError.textContent = "";
+  detailsOverlay.classList.add("active");
 }
 
-function showFieldError(input, show) {
-  input.classList.toggle("is-invalid", show);
-  const msg = detailsForm.querySelector(`.field-error[data-for="${input.id.replace("input-", "")}"]`);
-  if (msg) msg.classList.toggle("is-visible", show);
-}
+// Location sharing
+btnShareLocation.addEventListener("click", async (e) => {
+  e.preventDefault();
 
-function isValidEmail(v) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-}
-function isValidPhone(v) {
-  const digits = v.replace(/\D/g, "");
-  return digits.length >= 7 && digits.length <= 15;
-}
+  if ("geolocation" in navigator) {
+    locationBtnLabel.textContent = "Getting location...";
+    locationStatus.classList.add("show");
+    locationStatus.textContent = "Fetching...";
 
-/* ---- unique, user-friendly Request ID (e.g. AW-2027-X7K92P) ---- */
-function generateRequestId() {
-  const year = new Date().getFullYear();
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const randomValues = new Uint8Array(6);
-  crypto.getRandomValues(randomValues);
-  let code = "";
-  for (let i = 0; i < 6; i++) code += chars[randomValues[i] % chars.length];
-  return `AW-${year}-${code}`;
-}
-
-/* ---- optional live location ---- */
-const btnShareLocation = document.getElementById("btn-share-location");
-const locationLabel = document.getElementById("location-btn-label");
-const locationStatus = document.getElementById("location-status");
-
-let locationData = {
-  locationShared: false,
-  latitude: null,
-  longitude: null,
-  altitude: null
-};
-
-btnShareLocation.addEventListener("click", () => {
-  if (!("geolocation" in navigator)) {
-    locationStatus.textContent = "Location is not supported on this device.";
-    locationStatus.classList.add("is-error");
-    return;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          altitude: position.coords.altitude,
+          accuracy: position.coords.accuracy
+        };
+        userLocationShared = true;
+        locationBtnLabel.textContent = "✓ Location Shared";
+        locationStatus.textContent = `${userLocation.latitude.toFixed(5)}, ${userLocation.longitude.toFixed(5)}`;
+        btnShareLocation.classList.add("success");
+      },
+      (error) => {
+        locationStatus.textContent = `Error: ${error.message}`;
+        locationBtnLabel.textContent = "Share Live Location";
+      }
+    );
+  } else {
+    locationStatus.textContent = "Geolocation not supported";
+    locationStatus.classList.add("show");
   }
-  locationLabel.textContent = "Getting location…";
-  locationStatus.textContent = "";
-  locationStatus.classList.remove("is-error");
-
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const { latitude, longitude, altitude } = position.coords;
-      locationData = {
-        locationShared: true,
-        latitude,
-        longitude,
-        altitude: (altitude === null || altitude === undefined) ? null : altitude
-      };
-      locationLabel.textContent = "Location Shared ✓";
-      locationStatus.textContent = "Your current location has been captured.";
-    },
-    (err) => {
-      locationLabel.textContent = "Share Live Location";
-      locationStatus.textContent = "Location was not shared. You can still submit without it.";
-      locationStatus.classList.add("is-error");
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
 });
 
-/* ---- submit ---- */
+// Form validation
+function validateDetailsForm() {
+  const email = document.getElementById("input-email").value.trim();
+  const phone = document.getElementById("input-phone").value.trim();
+  const address = document.getElementById("input-address").value.trim();
+
+  let isValid = true;
+
+  // Email
+  const emailError = document.querySelector('[data-for="email"]');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    emailError.classList.add("show");
+    isValid = false;
+  } else {
+    emailError.classList.remove("show");
+  }
+
+  // Phone
+  const phoneError = document.querySelector('[data-for="phone"]');
+  if (!phone || phone.length < 10) {
+    phoneError.classList.add("show");
+    isValid = false;
+  } else {
+    phoneError.classList.remove("show");
+  }
+
+  // Address
+  const addressError = document.querySelector('[data-for="address"]');
+  if (!address) {
+    addressError.classList.add("show");
+    isValid = false;
+  } else {
+    addressError.classList.remove("show");
+  }
+
+  return isValid;
+}
+
+// Submit form
 detailsForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   submitError.textContent = "";
 
-  const emailOk = isValidEmail(inputEmail.value);
-  const phoneOk = isValidPhone(inputPhone.value);
-  const addressOk = inputAddress.value.trim().length > 0;
+  if (!validateDetailsForm()) {
+    return;
+  }
 
-  showFieldError(inputEmail, !emailOk);
-  showFieldError(inputPhone, !phoneOk);
-  showFieldError(inputAddress, !addressOk);
+  const email = document.getElementById("input-email").value.trim();
+  const phone = document.getElementById("input-phone").value.trim();
+  const address = document.getElementById("input-address").value.trim();
 
-  if (!emailOk || !phoneOk || !addressOk) return;
-
-  submitBtn.disabled = true;
-  submitBtn.querySelector("span").textContent = "Submitting…";
-
-  const categoryLabel = CATEGORY_LABELS[currentCategory] || currentCategory;
-  const requestId = generateRequestId();
+  // Generate request ID
+  const requestId = `REQ-${Date.now()}`;
 
   try {
-    await addDoc(collection(db, "foodWasteRequests"), {
+    // Prepare data for Firestore
+    const requestData = {
       requestId,
-      selectedWasteTypes: selectedTypes,
-      category: categoryLabel,
-      email: inputEmail.value.trim(),
-      phone: inputPhone.value.trim(),
-      address: inputAddress.value.trim(),
-      locationShared: locationData.locationShared,
-      latitude: locationData.latitude,
-      longitude: locationData.longitude,
-      altitude: locationData.altitude,
-      createdAt: serverTimestamp(),
-      status: "NEW"
-    });
-
-    // Keep the just-submitted details around so "View Available Solutions"
-    // can match products without re-reading form state that's about to reset.
-    lastSubmission = {
-      requestId,
-      category: categoryLabel,
-      selectedWasteTypes: [...selectedTypes],
-      locationShared: locationData.locationShared,
-      latitude: locationData.latitude,
-      longitude: locationData.longitude,
-      altitude: locationData.altitude
+      category: currentCategory,
+      selectedWasteTypes,
+      email,
+      phone,
+      address,
+      locationShared: userLocationShared,
+      latitude: userLocation?.latitude || null,
+      longitude: userLocation?.longitude || null,
+      altitude: userLocation?.altitude || null,
+      accuracy: userLocation?.accuracy || null,
+      status: "NEW",
+      createdAt: new Date()
     };
 
-    closeOverlay(overlayDetails);
-    showSuccess(lastSubmission);
-    detailsForm.reset();
-    locationData = { locationShared: false, latitude: null, longitude: null, altitude: null };
-    locationLabel.textContent = "Share Live Location";
-    locationStatus.textContent = "";
-  } catch (err) {
-    console.error(err);
-    submitError.textContent = "Unable to submit your details right now. Please try again.";
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.querySelector("span").textContent = "Submit";
+    // Save to Firestore
+    const docRef = await addDoc(collection(db, "foodWasteRequests"), requestData);
+    console.log("✅ Request saved:", docRef.id);
+
+    // Close details overlay, show success
+    detailsOverlay.classList.remove("active");
+    showSuccessOverlay(requestId);
+  } catch (error) {
+    console.error("❌ Submit error:", error);
+    submitError.textContent = "Error submitting. Please try again.";
   }
 });
 
-/* ============================================================
-   5. SUCCESS overlay
-   ============================================================ */
-const overlaySuccess = document.getElementById("overlay-success");
+// ============================================================
+// SUCCESS OVERLAY
+// ============================================================
+const successOverlay = document.getElementById("overlay-success");
 const successRequestId = document.getElementById("success-request-id");
 const successSelected = document.getElementById("success-selected");
 const successLocation = document.getElementById("success-location");
 const successLocationDetail = document.getElementById("success-location-detail");
-const btnViewSolutions = document.getElementById("btn-view-solutions");
 
-let lastSubmission = null;
+function showSuccessOverlay(requestId) {
+  successRequestId.textContent = requestId;
 
-function formatAltitude(altitude) {
-  return (altitude === null || altitude === undefined)
-    ? "Not available"
-    : `${altitude.toFixed(1)} m`;
-}
+  successSelected.innerHTML = selectedWasteTypes
+    .map(type => `<li>${type}</li>`)
+    .join("");
 
-function showSuccess(submission) {
-  successRequestId.textContent = submission.requestId;
-  successSelected.innerHTML = submission.selectedWasteTypes.map(t => `<li>✓ ${t}</li>`).join("");
-
-  if (submission.locationShared) {
-    successLocation.textContent = "Location: Shared successfully";
+  if (userLocationShared && userLocation) {
+    successLocation.textContent = "✓ Location shared:";
     successLocationDetail.innerHTML = `
-      <span>Latitude: ${submission.latitude}</span>
-      <span>Longitude: ${submission.longitude}</span>
-      <span>Altitude: ${formatAltitude(submission.altitude)}</span>
+      Latitude: ${userLocation.latitude.toFixed(6)}<br>
+      Longitude: ${userLocation.longitude.toFixed(6)}<br>
+      ${userLocation.altitude ? `Altitude: ${userLocation.altitude.toFixed(1)}m<br>` : ""}
+      Accuracy: ±${userLocation.accuracy.toFixed(0)}m
     `;
-    successLocationDetail.classList.add("is-visible");
   } else {
-    successLocation.textContent = "Location: Not provided";
+    successLocation.textContent = "Location: Not shared";
     successLocationDetail.innerHTML = "";
-    successLocationDetail.classList.remove("is-visible");
   }
 
-  openOverlay(overlaySuccess);
+  successOverlay.classList.add("active");
 }
 
-document.getElementById("btn-success-close").addEventListener("click", () => {
-  closeOverlay(overlaySuccess);
-
-  lastSubmission = null;
-  selectedTypes = [];
-  currentCategory = null;
-
-  const foodWasteSection = document.getElementById("section-foodwaste");
-  const choiceSection = document.getElementById("section-choice");
-
-  // Reset main selection screen
-  foodWasteSection.classList.remove("is-hidden");
-  choiceSection.classList.remove("is-visible");
-
-  // Return to Food Waste section
-  setTimeout(() => {
-    foodWasteSection.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  }, 100);
+// ============================================================
+// SUCCESS OVERLAY ACTIONS
+// ============================================================
+document.getElementById("btn-view-solutions").addEventListener("click", () => {
+  successOverlay.classList.remove("active");
+  loadAndShowSolutions();
 });
 
-/* ============================================================
-   6. PRODUCT MATCHING — "View Available Solutions"
-   ============================================================ */
-const overlaySolutions = document.getElementById("overlay-solutions");
+document.getElementById("btn-success-close").addEventListener("click", () => {
+  successOverlay.classList.remove("active");
+  resetFlow();
+});
+
+// ============================================================
+// SOLUTIONS OVERLAY
+// ============================================================
+const solutionsOverlay = document.getElementById("overlay-solutions");
 const solutionsList = document.getElementById("solutions-list");
 const solutionsStatus = document.getElementById("solutions-status");
 
-btnViewSolutions.addEventListener("click", async () => {
-  if (!lastSubmission) return;
-  openOverlay(overlaySolutions);
-  solutionsList.innerHTML = "";
-  solutionsStatus.textContent = "Loading available solutions…";
-  solutionsStatus.classList.remove("is-error");
+async function loadAndShowSolutions() {
+  solutionsList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Loading solutions...</div>';
+  solutionsOverlay.classList.add("active");
 
   try {
-    // Only fetched on demand — no background/continuous Firestore reads.
-    const q = query(
-      collection(db, "products"),
-      where("active", "==", true),
-      where("category", "==", lastSubmission.category)
-    );
+    const productsRef = collection(db, "products");
+    const q = query(productsRef);
     const snapshot = await getDocs(q);
 
-    const matches = [];
-    snapshot.forEach((docSnap) => {
-      const product = docSnap.data();
-      const wasteTypes = Array.isArray(product.availableWasteTypes) ? product.availableWasteTypes : [];
-      const overlaps = wasteTypes.some(t => lastSubmission.selectedWasteTypes.includes(t));
-      if (overlaps) matches.push(product);
+    const products = [];
+    snapshot.forEach(doc => {
+      products.push({
+        id: doc.id,
+        ...doc.data()
+      });
     });
 
-    if (matches.length === 0) {
-      solutionsStatus.textContent = "No matching solutions are currently available.";
+    if (products.length === 0) {
+      solutionsStatus.textContent = "No solutions available right now.";
+      solutionsList.innerHTML = "";
       return;
     }
 
-    solutionsStatus.textContent = "";
-    solutionsList.innerHTML = matches.map(renderProductCard).join("");
-  } catch (err) {
-    console.error(err);
-    solutionsStatus.textContent = "Unable to load solutions right now. Please try again.";
-    solutionsStatus.classList.add("is-error");
+    solutionsStatus.textContent = `Found ${products.length} solution(s) for your waste type:`;
+    solutionsList.innerHTML = products
+      .map(product => `
+        <div class="product-card">
+          ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.productName}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">` : ""}
+          <h4>${product.productName || "Untitled"}</h4>
+          <p>${product.description || "No description"}</p>
+          <div class="product-price">₹${product.price || "N/A"}</div>
+          <span class="status ${product.active ? "" : "off"}">${product.active ? "ACTIVE" : "INACTIVE"}</span>
+        </div>
+      `)
+      .join("");
+  } catch (error) {
+    console.error("❌ Error loading solutions:", error);
+    solutionsStatus.textContent = "Error loading solutions. Please try again.";
+    solutionsList.innerHTML = "";
   }
-});
-
-function renderProductCard(product) {
-  const waste = Array.isArray(product.availableWasteTypes) ? product.availableWasteTypes : [];
-  const img = product.imageUrl
-    ? `<img src="${product.imageUrl}" alt="${product.productName || ""}" loading="lazy">`
-    : `<div class="product-card-art-fallback" aria-hidden="true"></div>`;
-
-  return `
-    <article class="product-card">
-      <div class="product-card-art">${img}</div>
-      <div class="product-card-body">
-        <span class="product-card-category">${product.category || ""}</span>
-        <h4>${product.productName || "Untitled product"}</h4>
-        <p>${product.description || ""}</p>
-        <p class="product-card-suitable-label">Suitable for:</p>
-        <ul class="product-card-waste">
-          ${waste.map(w => `<li>${w}</li>`).join("")}
-        </ul>
-        <span class="product-card-available">Available</span>
-      </div>
-    </article>
-  `;
 }
 
 document.getElementById("btn-solutions-close").addEventListener("click", () => {
-  closeOverlay(overlaySolutions);
+  solutionsOverlay.classList.remove("active");
+  resetFlow();
 });
+
+// ============================================================
+// RESET FLOW
+// ============================================================
+function resetFlow() {
+  // Reset state
+  currentCategory = null;
+  selectedWasteTypes = [];
+  userLocation = null;
+  userLocationShared = false;
+
+  // Show food waste card again
+  foodWasteCard.style.display = "block";
+  choiceSection.style.display = "none";
+
+  // Scroll to top
+  document.getElementById("section-foodwaste").scrollIntoView({ behavior: "smooth" });
+}
+
+console.log("✅ App initialized and ready");
