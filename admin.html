@@ -557,17 +557,31 @@ function isAdmin(user) {
 
   return allowedEmails.includes(signedInEmail);
 }
-    const app = getApps().length ? getApp() : null;
+    let app;
+let auth;
+let db;
+let googleProvider;
 
-    if (!app) {
-      throw new Error(
-        "Firebase app was not initialized. Check js/firebase-config.js."
-      );
-    }
+try {
+  app = getApps().length ? getApp() : null;
 
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const googleProvider = new GoogleAuthProvider();
+  if (!app) {
+    throw new Error(
+      "Firebase app was not initialized. Check js/firebase-config.js."
+    );
+  }
+
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
+
+  console.log("AURA Admin Firebase initialized successfully.");
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+
+  document.getElementById("login-error").textContent =
+    "Firebase could not start. Check firebase-config.js.";
+}
 
     const loginView = document.getElementById("login-view");
     const adminView = document.getElementById("admin-view");
