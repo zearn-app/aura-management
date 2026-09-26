@@ -541,6 +541,22 @@
       "hari066@gmail.com"
     ];
 
+function isAdmin(user) {
+  if (!user) return false;
+
+  const signedInEmail = String(user.email || "")
+    .trim()
+    .toLowerCase();
+
+  const allowedEmails = ADMIN_EMAILS.map(email =>
+    String(email).trim().toLowerCase()
+  );
+
+  console.log("Firebase signed-in email:", signedInEmail);
+  console.log("Allowed admin emails:", allowedEmails);
+
+  return allowedEmails.includes(signedInEmail);
+}
     const app = getApps().length ? getApp() : null;
 
     if (!app) {
