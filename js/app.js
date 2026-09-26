@@ -103,7 +103,7 @@ function nextScreen() {
 // ============================================================
 // INITIALIZE APP
 // ============================================================
-function initializeApp() {
+function initApp() {
   console.log("🚀 Initializing app...");
 
   // Initialize screens
@@ -511,7 +511,7 @@ function initializeApp() {
 
 // Wait for DOM to be ready
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeApp);
+  document.addEventListener("DOMContentLoaded", initApp);
 } else {
-  initializeApp();
+  initApp();
 }
