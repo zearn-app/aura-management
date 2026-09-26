@@ -489,7 +489,7 @@
       </div>
 
       <h1>Admin Login</h1>
-      <p class="subtitle">Sign in to view food-waste requests, users and available products.</p>
+      <p class="subtitle">Sign in to view food-waste requests.</p>
 
       <form id="login-form">
         <div class="field">
@@ -530,7 +530,7 @@
       <div class="welcome">
         <div>
           <h1>Admin Dashboard</h1>
-          <p>Monitor users, food-waste requests and products.</p>
+          <p>Monitor food-waste requests.</p>
         </div>
       </div>
 
@@ -538,28 +538,10 @@
 
       <section class="stats">
         <div class="stat">
-          <div class="stat-label">Users</div>
-          <div class="stat-value" id="stat-users">—</div>
-        </div>
-        <div class="stat">
           <div class="stat-label">Requests</div>
           <div class="stat-value" id="stat-requests">—</div>
         </div>
-        <div class="stat">
-          <div class="stat-label">Products</div>
-          <div class="stat-value" id="stat-products">—</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Active Products</div>
-          <div class="stat-value" id="stat-active-products">—</div>
-        </div>
       </section>
-
-      <nav class="tabs">
-        <button class="tab-btn active" data-tab="requests">Food Waste Requests</button>
-        <button class="tab-btn" data-tab="users">Users</button>
-        <button class="tab-btn" data-tab="products">Products</button>
-      </nav>
 
       <!-- REQUESTS TAB -->
       <section id="tab-requests" class="tab-panel">
@@ -583,55 +565,6 @@
                 </tr>
               </thead>
               <tbody id="requests-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- USERS TAB -->
-      <section id="tab-users" class="tab-panel hidden">
-        <div class="toolbar">
-          <input class="search" id="user-search" placeholder="Search name, email, phone..." />
-          <button class="refresh" data-refresh="users">Refresh</button>
-        </div>
-        <div class="panel">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Address</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody id="users-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- PRODUCTS TAB -->
-      <section id="tab-products" class="tab-panel hidden">
-        <div class="toolbar">
-          <input class="search" id="product-search" placeholder="Search product, category, waste type..." />
-          <button class="refresh" data-refresh="products">Refresh</button>
-        </div>
-        <div class="panel">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Suitable Waste</th>
-                  <th>Image</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="products-body"></tbody>
             </table>
           </div>
         </div>
@@ -817,8 +750,6 @@
 
     // ========== DATA STORES ==========
     let requestRows = [];
-    let userRows = [];
-    let productRows = [];
 
     // ========== LOAD DATA ==========
     async function loadRequests() {
@@ -842,259 +773,9 @@
       }
     }
 
-    async function loadUsers() {
-      const tbody = document.getElementById("users-body");
-      renderLoading(tbody, 5);
-
-      try {
-        let explicitUsers = [];
-        try {
-          const snapshot = await getDocs(collection(db, "users"));
-          explicitUsers = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-        } catch (e) {
-          console.warn("users collection not available", e);
-        }
-
-        const derivedByEmail = new Map();
-        requestRows.forEach(request => {
-          const email = String(request.email || "").trim().toLowerCase();
-          if (email && !derivedByEmail.has(email)) {
-            derivedByEmail.set(email, {
-              id: `request-${email}`,
-              name: request.name || "",
-              email: request.email || "",
-              phone: request.phone || "",
-              address: request.address || "",
-              createdAt: request.createdAt || null
-            });
-          }
-        });
-
-        const explicitByEmail = new Map(
-          explicitUsers.filter(u => u.email).map(u => [u.email.toLowerCase(), u])
-        );
-
-        for (const [email, user] of derivedByEmail) {
-          if (!explicitByEmail.has(email)) {
-            explicitUsers.push(user);
-          }
-        }
-
-        userRows = explicitUsers;
-        renderUsers();
-        document.getElementById("stat-users").textContent = userRows.length;
-      } catch (error) {
-        console.error(error);
-        renderError(tbody, 5, "Unable to load users.");
-      }
-    }
-
-    async function loadProducts() {
-      const tbody = document.getElementById("products-body");
-      renderLoading(tbody, 6);
-
-      try {
-        const snapshot = await getDocs(collection(db, "products"));
-
-        productRows = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-        renderProducts();
-        document.getElementById("stat-products").textContent = productRows.length;
-        document.getElementById("stat-active-products").textContent = productRows.filter(
-          p => p.active === true
-        ).length;
-      } catch (error) {
-        console.error(error);
-        renderError(tbody, 6, "Unable to load products.");
-      }
-    }
-
     async function loadDashboard() {
-      await Promise.all([loadRequests(), loadUsers(), loadProducts()]);
+      await loadRequests();
     }
 
-    // ========== RENDER REQUESTS ==========
-    function renderRequests() {
-      const tbody = document.getElementById("requests-body");
-      const search = normalize(document.getElementById("request-search").value);
-
-      const filtered = requestRows.filter(item => {
-        const waste = Array.isArray(item.selectedWasteTypes)
-          ? item.selectedWasteTypes.join(" ")
-          : "";
-        const text = [
-          item.requestId,
-          item.email,
-          item.phone,
-          item.category,
-          item.address,
-          item.status,
-          waste
-        ].join(" ");
-        return normalize(text).includes(search);
-      });
-
-      if (!filtered.length) {
-        renderEmpty(tbody, 8);
-        return;
-      }
-
-      tbody.innerHTML = filtered
-        .map(item => {
-          const wasteTypes = Array.isArray(item.selectedWasteTypes) ? item.selectedWasteTypes : [];
-          const locationText = item.locationShared
-            ? `${Number(item.latitude || 0).toFixed(5)}, ${Number(item.longitude || 0).toFixed(5)}`
-            : "Not shared";
-
-          return `
-            <tr>
-              <td>
-                <strong>${escapeHtml(item.requestId || item.id)}</strong>
-                <div class="muted small">${escapeHtml(item.id)}</div>
-              </td>
-              <td>
-                <strong>${escapeHtml(item.email || "—")}</strong>
-                <div class="muted small">${escapeHtml(item.phone || "—")}</div>
-              </td>
-              <td>${escapeHtml(item.category || "—")}</td>
-              <td>
-                <div class="chips">
-                  ${wasteTypes.length
-                    ? wasteTypes.map(w => `<span class="chip">${escapeHtml(w)}</span>`).join("")
-                    : "—"}
-                </div>
-              </td>
-              <td>${escapeHtml(item.address || "—")}</td>
-              <td>${escapeHtml(locationText)}</td>
-              <td>
-                <span class="status ${item.status === "NEW" ? "pending" : ""}">
-                  ${escapeHtml(item.status || "—")}
-                </span>
-              </td>
-              <td>${escapeHtml(formatDate(item.createdAt))}</td>
-            </tr>
-          `;
-        })
-        .join("");
-    }
-
-    // ========== RENDER USERS ==========
-    function renderUsers() {
-      const tbody = document.getElementById("users-body");
-      const search = normalize(document.getElementById("user-search").value);
-
-      const filtered = userRows.filter(item => {
-        const text = [item.name, item.email, item.phone, item.address, item.id].join(" ");
-        return normalize(text).includes(search);
-      });
-
-      if (!filtered.length) {
-        renderEmpty(tbody, 5);
-        return;
-      }
-
-      tbody.innerHTML = filtered
-        .map(
-          item => `
-        <tr>
-          <td>
-            <strong>${escapeHtml(item.name || "Unnamed")}</strong>
-            <div class="muted small">${escapeHtml(item.id)}</div>
-          </td>
-          <td>${escapeHtml(item.email || "—")}</td>
-          <td>${escapeHtml(item.phone || "—")}</td>
-          <td>${escapeHtml(item.address || "—")}</td>
-          <td>${escapeHtml(formatDate(item.createdAt))}</td>
-        </tr>
-      `
-        )
-        .join("");
-    }
-
-    // ========== RENDER PRODUCTS ==========
-    function renderProducts() {
-      const tbody = document.getElementById("products-body");
-      const search = normalize(document.getElementById("product-search").value);
-
-      const filtered = productRows.filter(item => {
-        const waste = Array.isArray(item.availableWasteTypes)
-          ? item.availableWasteTypes.join(" ")
-          : "";
-        const text = [item.productName, item.category, item.description, waste, item.id].join(" ");
-        return normalize(text).includes(search);
-      });
-
-      if (!filtered.length) {
-        renderEmpty(tbody, 6);
-        return;
-      }
-
-      tbody.innerHTML = filtered
-        .map(item => {
-          const waste = Array.isArray(item.availableWasteTypes) ? item.availableWasteTypes : [];
-          return `
-          <tr>
-            <td>
-              <strong>${escapeHtml(item.productName || "Untitled")}</strong>
-              <div class="muted small">${escapeHtml(item.id)}</div>
-            </td>
-            <td>${escapeHtml(item.category || "—")}</td>
-            <td>${escapeHtml(item.description || "—")}</td>
-            <td>
-              <div class="chips">
-                ${waste.length ? waste.map(w => `<span class="chip">${escapeHtml(w)}</span>`).join("") : "—"}
-              </div>
-            </td>
-            <td>
-              ${item.imageUrl
-                ? `<img class="product-thumb" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.productName || "Product")}">`
-                : `<span class="muted">No image</span>`}
-            </td>
-            <td>
-              <span class="status ${item.active === true ? "" : "off"}">
-                ${item.active === true ? "ACTIVE" : "INACTIVE"}
-              </span>
-            </td>
-          </tr>
-        `;
-        })
-        .join("");
-    }
-
-    // ========== TABS ==========
-    document.querySelectorAll(".tab-btn").forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-        document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.add("hidden"));
-        button.classList.add("active");
-        document.getElementById(`tab-${button.dataset.tab}`).classList.remove("hidden");
-      });
-    });
-
-    // ========== SEARCH ==========
-    document.getElementById("request-search").addEventListener("input", renderRequests);
-    document.getElementById("user-search").addEventListener("input", renderUsers);
-    document.getElementById("product-search").addEventListener("input", renderProducts);
-
-    // ========== REFRESH ==========
-    document.querySelectorAll("[data-refresh]").forEach(button => {
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        try {
-          if (button.dataset.refresh === "requests") await loadRequests();
-          if (button.dataset.refresh === "users") await loadUsers();
-          if (button.dataset.refresh === "products") await loadProducts();
-        } finally {
-          button.disabled = false;
-        }
-      });
-    });
-  </script>
-</body>
-</html>
+    
+      
