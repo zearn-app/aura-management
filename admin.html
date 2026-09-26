@@ -1,1138 +1,1223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AURA Management — Admin</title>
+
   <style>
-    :root{
-      --bg:#0b1110;
-      --panel:#111a18;
-      --panel-2:#17211f;
-      --line:#263632;
-      --text:#f4f7f6;
-      --muted:#9eafaa;
-      --accent:#9ccf5a;
-      --accent-2:#c8e89a;
-      --danger:#ff7777;
-      --warning:#ffd166;
-      --shadow:0 20px 60px rgba(0,0,0,.28);
-      --radius:18px;
+    :root {
+      --bg: #0b1110;
+      --panel: #111a18;
+      --panel-2: #17211f;
+      --line: #263632;
+      --text: #f4f7f6;
+      --muted: #9eafaa;
+      --accent: #9ccf5a;
+      --accent-2: #c8e89a;
+      --danger: #ff7777;
+      --warning: #ffd166;
+      --shadow: 0 20px 60px rgba(0,0,0,.28);
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+
       background:
-        radial-gradient(circle at top left, rgba(156,207,90,.10), transparent 35%),
-        radial-gradient(circle at bottom right, rgba(84,145,112,.10), transparent 35%),
+        radial-gradient(
+          circle at top left,
+          rgba(156,207,90,.10),
+          transparent 35%
+        ),
+        radial-gradient(
+          circle at bottom right,
+          rgba(84,145,112,.10),
+          transparent 35%
+        ),
         var(--bg);
-      color:var(--text);
-    }
-    button,input,select{font:inherit}
-    button{cursor:pointer}
-    .hidden{display:none!important}
 
-    /* Login */
-    #login-view{
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding:24px;
-    }
-    .login-card{
-      width:min(430px,100%);
-      padding:32px;
-      background:rgba(17,26,24,.92);
-      border:1px solid var(--line);
-      border-radius:26px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:24px;
-    }
-    .brand-mark{
-      width:48px;height:48px;
-      border-radius:15px;
-      display:grid;place-items:center;
-      background:linear-gradient(135deg,var(--accent),#557f45);
-      color:#10170f;
-      font-weight:900;
-      font-size:22px;
-    }
-    h1,h2,h3,p{margin-top:0}
-    .login-card h1{margin-bottom:8px}
-    .subtitle{color:var(--muted);line-height:1.6}
-    .field{margin:16px 0}
-    .field label{
-      display:block;
-      margin-bottom:8px;
-      font-size:13px;
-      color:var(--muted);
-    }
-    .field input{
-      width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#0c1312;
-      color:var(--text);
-      outline:none;
-    }
-    .field input:focus{border-color:var(--accent)}
-    .primary-btn,.google-btn,.logout-btn,.tab-btn,.action-btn{
-      border:0;
-      border-radius:12px;
-      padding:12px 15px;
-      transition:.2s ease;
-    }
-    .primary-btn{
-      width:100%;
-      background:var(--accent);
-      color:#0b1109;
-      font-weight:800;
-    }
-    .primary-btn:hover{transform:translateY(-1px)}
-    .google-btn{
-      width:100%;
-      margin-top:10px;
-      background:#f4f7f6;
-      color:#111;
-      font-weight:700;
-    }
-    .divider{
-      display:flex;align-items:center;gap:10px;
-      color:var(--muted);
-      font-size:12px;
-      margin:18px 0;
-    }
-    .divider:before,.divider:after{
-      content:"";height:1px;background:var(--line);flex:1;
-    }
-    .login-error{
-      color:var(--danger);
-      min-height:20px;
-      margin-top:12px;
-      font-size:13px;
-      line-height:1.5;
+      color: var(--text);
     }
 
-    /* App */
-    #admin-view{min-height:100vh}
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:20;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:16px;
-      padding:14px 22px;
-      background:rgba(11,17,16,.88);
-      border-bottom:1px solid var(--line);
-      backdrop-filter:blur(16px);
-    }
-    .topbar-left{display:flex;align-items:center;gap:12px}
-    .topbar .brand-mark{width:40px;height:40px;border-radius:12px;font-size:18px}
-    .admin-title{font-weight:800}
-    .admin-email{font-size:12px;color:var(--muted)}
-    .logout-btn{
-      background:transparent;
-      color:var(--text);
-      border:1px solid var(--line);
-    }
-    .logout-btn:hover{border-color:var(--danger);color:var(--danger)}
-
-    .container{
-      width:min(1400px,calc(100% - 32px));
-      margin:24px auto 50px;
-    }
-    .welcome{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:16px;
-      margin-bottom:22px;
-    }
-    .welcome p{color:var(--muted);margin:4px 0 0}
-
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:14px;
-      margin-bottom:22px;
-    }
-    .stat{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:20px;
-    }
-    .stat-label{font-size:13px;color:var(--muted)}
-    .stat-value{font-size:30px;font-weight:850;margin-top:7px}
-
-    .tabs{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-bottom:16px;
-    }
-    .tab-btn{
-      background:var(--panel);
-      border:1px solid var(--line);
-      color:var(--muted);
-    }
-    .tab-btn.active{
-      background:var(--accent);
-      border-color:var(--accent);
-      color:#0b1109;
-      font-weight:800;
+    button,
+    input {
+      font: inherit;
     }
 
-    .toolbar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:14px;
-    }
-    .search{
-      flex:1;
-      min-width:230px;
-      padding:12px 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
-      outline:none;
-    }
-    .refresh{
-      padding:12px 15px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
+    button {
+      cursor: pointer;
     }
 
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:20px;
-      overflow:hidden;
-    }
-    .table-wrap{overflow:auto}
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:850px;
-    }
-    th,td{
-      padding:14px 16px;
-      text-align:left;
-      border-bottom:1px solid var(--line);
-      vertical-align:top;
-    }
-    th{
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      color:var(--muted);
-      background:rgba(255,255,255,.015);
-      white-space:nowrap;
-    }
-    td{font-size:14px}
-    tr:last-child td{border-bottom:0}
-    .muted{color:var(--muted)}
-    .status{
-      display:inline-flex;
-      padding:5px 9px;
-      border-radius:999px;
-      background:rgba(156,207,90,.12);
-      color:var(--accent-2);
-      font-size:12px;
-      font-weight:750;
-    }
-    .status.off{
-      background:rgba(255,119,119,.10);
-      color:#ff9a9a;
-    }
-    .status.pending{
-      background:rgba(255,209,102,.10);
-      color:var(--warning);
-    }
-    .chips{display:flex;flex-wrap:wrap;gap:5px}
-    .chip{
-      padding:5px 8px;
-      border-radius:8px;
-      background:var(--panel-2);
-      border:1px solid var(--line);
-      color:#d8e3df;
-      font-size:12px;
-    }
-    .empty,.loading,.error{
-      padding:35px 20px;
-      text-align:center;
-      color:var(--muted);
-    }
-    .error{color:var(--danger)}
-    .product-thumb{
-      width:58px;height:58px;
-      border-radius:12px;
-      object-fit:cover;
-      background:var(--panel-2);
-      border:1px solid var(--line);
-    }
-    .small{font-size:12px}
-    .actions{
-      display:flex;
-      gap:7px;
-      flex-wrap:wrap;
-    }
-    .action-btn{
-      background:var(--panel-2);
-      color:var(--text);
-      border:1px solid var(--line);
-      font-size:12px;
-    }
-    .action-btn.danger{color:#ff9a9a}
-    .notice{
-      margin-bottom:16px;
-      padding:12px 14px;
-      border-radius:12px;
-      background:rgba(156,207,90,.08);
-      border:1px solid rgba(156,207,90,.2);
-      color:#d9e9d0;
-      font-size:13px;
+    .hidden {
+      display: none !important;
     }
 
-    @media(max-width:900px){
-      .stats{grid-template-columns:repeat(2,1fr)}
+    /* =========================
+       LOGIN
+       ========================= */
+
+    #login-view {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
     }
-    @media(max-width:600px){
-      .topbar{padding:12px 14px}
-      .container{width:min(100% - 20px,1400px);margin-top:18px}
-      .topbar .admin-email{display:none}
-      .welcome{align-items:flex-start;flex-direction:column}
-      .stats{grid-template-columns:1fr 1fr;gap:9px}
-      .stat{padding:15px}
-      .stat-value{font-size:24px}
-      .login-card{padding:24px}
+
+    .login-card {
+      width: min(430px, 100%);
+      padding: 32px;
+
+      background: rgba(17,26,24,.94);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 15px;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--accent),
+          #557f45
+        );
+
+      color: #10170f;
+      font-weight: 900;
+      font-size: 22px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    .login-card h1 {
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .field {
+      margin: 16px 0;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .field input {
+      width: 100%;
+
+      padding: 13px 14px;
+
+      border-radius: 12px;
+      border: 1px solid var(--line);
+
+      background: #0c1312;
+      color: var(--text);
+
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+    }
+
+    .primary-btn,
+    .google-btn,
+    .logout-btn,
+    .tab-btn,
+    .refresh {
+      border-radius: 12px;
+      padding: 12px 15px;
+      transition: .2s ease;
+    }
+
+    .primary-btn {
+      width: 100%;
+
+      border: 0;
+
+      background: var(--accent);
+      color: #0b1109;
+
+      font-weight: 800;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn:disabled,
+    .google-btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .google-btn {
+      width: 100%;
+      margin-top: 10px;
+
+      border: 0;
+
+      background: #f4f7f6;
+      color: #111;
+
+      font-weight: 700;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      color: var(--muted);
+      font-size: 12px;
+
+      margin: 18px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+      flex: 1;
+    }
+
+    .login-error {
+      color: var(--danger);
+
+      min-height: 20px;
+      margin-top: 12px;
+
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* =========================
+       ADMIN APP
+       ========================= */
+
+    #admin-view {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 16px;
+
+      padding: 14px 22px;
+
+      background: rgba(11,17,16,.88);
+      border-bottom: 1px solid var(--line);
+
+      backdrop-filter: blur(16px);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar .brand-mark {
+      width: 40px;
+      height: 40px;
+
+      border-radius: 12px;
+      font-size: 18px;
+    }
+
+    .admin-title {
+      font-weight: 800;
+    }
+
+    .admin-email {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .logout-btn {
+      background: transparent;
+      color: var(--text);
+
+      border: 1px solid var(--line);
+    }
+
+    .logout-btn:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .container {
+      width: min(1400px, calc(100% - 32px));
+      margin: 24px auto 50px;
+    }
+
+    .welcome {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .welcome p {
+      color: var(--muted);
+      margin: 4px 0 0;
+    }
+
+    /* Stats */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      background: var(--panel);
+
+      border: 1px solid var(--line);
+      border-radius: 18px;
+
+      padding: 20px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 850;
+
+      margin-top: 7px;
+    }
+
+    /* Tabs */
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      background: var(--panel);
+      border: 1px solid var(--line);
+
+      color: var(--muted);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+
+      color: #0b1109;
+      font-weight: 800;
+    }
+
+    /* Toolbar */
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+
+      gap: 10px;
+
+      align-items: center;
+      justify-content: space-between;
+
+      margin-bottom: 14px;
+    }
+
+    .search {
+      flex: 1;
+      min-width: 230px;
+
+      padding: 12px 14px;
+
+      border-radius: 12px;
+      border: 1px solid var(--line);
+
+      background: var(--panel);
+      color: var(--text);
+
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--accent);
+    }
+
+    .refresh {
+      border: 1px solid var(--line);
+
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    /* Tables */
+
+    .panel {
+      background: var(--panel);
+
+      border: 1px solid var(--line);
+      border-radius: 20px;
+
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      min-width: 850px;
+    }
+
+    th,
+    td {
+      padding: 14px 16px;
+
+      text-align: left;
+
+      border-bottom: 1px solid var(--line);
+
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 12px;
+
+      text-transform: uppercase;
+      letter-spacing: .05em;
+
+      color: var(--muted);
+
+      background: rgba(255,255,255,.015);
+
+      white-space: nowrap;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+
+      padding: 5px 9px;
+
+      border-radius: 999px;
+
+      background: rgba(156,207,90,.12);
+      color: var(--accent-2);
+
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .status.off {
+      background: rgba(255,119,119,.10);
+      color: #ff9a9a;
+    }
+
+    .status.pending {
+      background: rgba(255,209,102,.10);
+      color: var(--warning);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      padding: 5px 8px;
+
+      border-radius: 8px;
+
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+
+      color: #d8e3df;
+
+      font-size: 12px;
+    }
+
+    .empty,
+    .loading,
+    .error {
+      padding: 35px 20px;
+
+      text-align: center;
+
+      color: var(--muted);
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .product-thumb {
+      width: 58px;
+      height: 58px;
+
+      border-radius: 12px;
+
+      object-fit: cover;
+
+      background: var(--panel-2);
+
+      border: 1px solid var(--line);
+    }
+
+    .notice {
+      margin-bottom: 16px;
+
+      padding: 12px 14px;
+
+      border-radius: 12px;
+
+      background: rgba(156,207,90,.08);
+      border: 1px solid rgba(156,207,90,.2);
+
+      color: #d9e9d0;
+
+      font-size: 13px;
+    }
+
+    @media(max-width:900px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media(max-width:600px) {
+      .topbar {
+        padding: 12px 14px;
+      }
+
+      .container {
+        width: min(100% - 20px, 1400px);
+        margin-top: 18px;
+      }
+
+      .topbar .admin-email {
+        display: none;
+      }
+
+      .welcome {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+      }
+
+      .stat {
+        padding: 15px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .login-card {
+        padding: 24px;
+      }
     }
   </style>
 </head>
+
 <body>
 
-  <!-- =========================
-       LOGIN
-       ========================= -->
-  <section id="login-view">
-    <div class="login-card">
-      <div class="brand">
-        <div class="brand-mark">A</div>
-        <div>
-          <strong>AURA</strong>
-          <div class="muted small">Management Admin</div>
+<!-- =====================================================
+     LOGIN
+     ===================================================== -->
+
+<section id="login-view">
+
+  <div class="login-card">
+
+    <div class="brand">
+
+      <div class="brand-mark">
+        A
+      </div>
+
+      <div>
+        <strong>AURA</strong>
+
+        <div class="muted small">
+          Management Admin
         </div>
       </div>
 
-      <h1>Admin Login</h1>
-      <p class="subtitle">
-        Sign in to view food-waste requests, users and available products.
-      </p>
+    </div>
 
-      <form id="login-form">
-        <div class="field">
-          <label for="login-email">Admin Email</label>
-          <input id="login-email" type="email" autocomplete="email" required />
-        </div>
+    <h1>Admin Login</h1>
 
-        <div class="field">
-          <label for="login-password">Password</label>
-          <input id="login-password" type="password" autocomplete="current-password" required />
-        </div>
+    <p class="subtitle">
+      Sign in to view food-waste requests, users and available products.
+    </p>
 
-        <button class="primary-btn" type="submit">Login</button>
-      </form>
+    <form id="login-form">
 
-      <div class="divider">OR</div>
+      <div class="field">
 
-      <button class="google-btn" id="google-login" type="button">
-        Continue with Google
+        <label for="login-email">
+          Admin Email
+        </label>
+
+        <input
+          id="login-email"
+          type="email"
+          autocomplete="email"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="login-password">
+          Password
+        </label>
+
+        <input
+          id="login-password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+
+      </div>
+
+      <button
+        class="primary-btn"
+        id="login-btn"
+        type="submit"
+      >
+        Login
       </button>
 
-      <div id="login-error" class="login-error"></div>
+    </form>
+
+    <div class="divider">
+      OR
     </div>
-  </section>
 
-  <!-- =========================
-       ADMIN APP
-       ========================= -->
-  <section id="admin-view" class="hidden">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="brand-mark">A</div>
-        <div>
-          <div class="admin-title">AURA Management</div>
-          <div class="admin-email" id="admin-email"></div>
-        </div>
+    <button
+      class="google-btn"
+      id="google-login"
+      type="button"
+    >
+      Continue with Google
+    </button>
+
+    <div
+      id="login-error"
+      class="login-error"
+    ></div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     ADMIN DASHBOARD
+     ===================================================== -->
+
+<section id="admin-view" class="hidden">
+
+  <header class="topbar">
+
+    <div class="topbar-left">
+
+      <div class="brand-mark">
+        A
       </div>
-      <button id="logout-btn" class="logout-btn" type="button">Logout</button>
-    </header>
 
-    <main class="container">
-      <div class="welcome">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p>Monitor users, food-waste requests and products.</p>
+      <div>
+
+        <div class="admin-title">
+          AURA Management
         </div>
+
+        <div
+          class="admin-email"
+          id="admin-email"
+        ></div>
+
       </div>
 
-      <div id="admin-notice" class="notice hidden"></div>
+    </div>
 
-      <section class="stats">
-        <div class="stat">
-          <div class="stat-label">Users</div>
-          <div class="stat-value" id="stat-users">—</div>
+    <button
+      id="logout-btn"
+      class="logout-btn"
+      type="button"
+    >
+      Logout
+    </button>
+
+  </header>
+
+
+  <main class="container">
+
+    <div class="welcome">
+
+      <div>
+
+        <h1>
+          Admin Dashboard
+        </h1>
+
+        <p>
+          Monitor users, food-waste requests and products.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="admin-notice"
+      class="notice hidden"
+    ></div>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Users
         </div>
-        <div class="stat">
-          <div class="stat-label">Requests</div>
-          <div class="stat-value" id="stat-requests">—</div>
+
+        <div
+          class="stat-value"
+          id="stat-users"
+        >
+          —
         </div>
-        <div class="stat">
-          <div class="stat-label">Products</div>
-          <div class="stat-value" id="stat-products">—</div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Requests
         </div>
-        <div class="stat">
-          <div class="stat-label">Active Products</div>
-          <div class="stat-value" id="stat-active-products">—</div>
+
+        <div
+          class="stat-value"
+          id="stat-requests"
+        >
+          —
         </div>
-      </section>
 
-      <nav class="tabs">
-        <button class="tab-btn active" data-tab="requests">Food Waste Requests</button>
-        <button class="tab-btn" data-tab="users">Users</button>
-        <button class="tab-btn" data-tab="products">Products</button>
-      </nav>
+      </div>
 
-      <section id="tab-requests" class="tab-panel">
-        <div class="toolbar">
-          <input class="search" id="request-search" placeholder="Search request ID, email, phone, category..." />
-          <button class="refresh" data-refresh="requests">Refresh</button>
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Products
         </div>
-        <div class="panel">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Request</th>
-                  <th>User Contact</th>
-                  <th>Category</th>
-                  <th>Waste Types</th>
-                  <th>Address</th>
-                  <th>Location</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody id="requests-body"></tbody>
-            </table>
-          </div>
+
+        <div
+          class="stat-value"
+          id="stat-products"
+        >
+          —
         </div>
-      </section>
 
-      <section id="tab-users" class="tab-panel hidden">
-        <div class="toolbar">
-          <input class="search" id="user-search" placeholder="Search name, email, phone..." />
-          <button class="refresh" data-refresh="users">Refresh</button>
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-label">
+          Active Products
         </div>
-        <div class="panel">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Address</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody id="users-body"></tbody>
-            </table>
-          </div>
+
+        <div
+          class="stat-value"
+          id="stat-active-products"
+        >
+          —
         </div>
-      </section>
 
-      <section id="tab-products" class="tab-panel hidden">
-        <div class="toolbar">
-          <input class="search" id="product-search" placeholder="Search product, category, waste type..." />
-          <button class="refresh" data-refresh="products">Refresh</button>
+      </div>
+
+    </section>
+
+
+    <!-- TABS -->
+
+    <nav class="tabs">
+
+      <button
+        class="tab-btn active"
+        data-tab="requests"
+      >
+        Food Waste Requests
+      </button>
+
+      <button
+        class="tab-btn"
+        data-tab="users"
+      >
+        Users
+      </button>
+
+      <button
+        class="tab-btn"
+        data-tab="products"
+      >
+        Products
+      </button>
+
+    </nav>
+
+
+    <!-- =================================================
+         REQUESTS
+         ================================================= -->
+
+    <section
+      id="tab-requests"
+      class="tab-panel"
+    >
+
+      <div class="toolbar">
+
+        <input
+          class="search"
+          id="request-search"
+          placeholder="Search request ID, email, phone, category..."
+        >
+
+        <button
+          class="refresh"
+          data-refresh="requests"
+        >
+          Refresh
+        </button>
+
+      </div>
+
+
+      <div class="panel">
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Request
+                </th>
+
+                <th>
+                  User Contact
+                </th>
+
+                <th>
+                  Category
+                </th>
+
+                <th>
+                  Waste Types
+                </th>
+
+                <th>
+                  Address
+                </th>
+
+                <th>
+                  Location
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+                <th>
+                  Created
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="requests-body"></tbody>
+
+          </table>
+
         </div>
-        <div class="panel">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Suitable Waste</th>
-                  <th>Image</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="products-body"></tbody>
-            </table>
-          </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         USERS
+         ================================================= -->
+
+    <section
+      id="tab-users"
+      class="tab-panel hidden"
+    >
+
+      <div class="toolbar">
+
+        <input
+          class="search"
+          id="user-search"
+          placeholder="Search name, email, phone..."
+        >
+
+        <button
+          class="refresh"
+          data-refresh="users"
+        >
+          Refresh
+        </button>
+
+      </div>
+
+
+      <div class="panel">
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  User
+                </th>
+
+                <th>
+                  Email
+                </th>
+
+                <th>
+                  Phone
+                </th>
+
+                <th>
+                  Address
+                </th>
+
+                <th>
+                  Created
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="users-body"></tbody>
+
+          </table>
+
         </div>
-      </section>
-    </main>
-  </section>
 
-  <script type="module">
-    /*
-      AURA MANAGEMENT ADMIN
+      </div>
 
-      IMPORTANT:
-      1. This file uses the same Firebase project as your public website.
-      2. firebase-config.js must already initialize the Firebase app.
-      3. Change ADMIN_EMAILS below to the Gmail account(s) allowed to enter
-         this dashboard.
-      4. Firestore Security Rules MUST ALSO restrict admin collections.
-         The email check below is only the UI gate.
-    */
+    </section>
 
-    import "./js/firebase-config.js";
 
-    import {
-      getApp,
-      getApps
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    <!-- =================================================
+         PRODUCTS
+         ================================================= -->
 
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      signInWithPopup,
-      GoogleAuthProvider,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    <section
+      id="tab-products"
+      class="tab-panel hidden"
+    >
 
-    import {
-      getFirestore,
-      collection,
-      getDocs,
-      query,
-      orderBy
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+      <div class="toolbar">
 
-    /* ==========================================
-       1. ADMIN ACCESS
-       ========================================== */
+        <input
+          class="search"
+          id="product-search"
+          placeholder="Search product, category, waste type..."
+        >
 
-    // CHANGE THIS to your real admin Gmail.
-    const ADMIN_EMAILS = [
-      "hari066@gmail.com"
-    ];
+        <button
+          class="refresh"
+          data-refresh="products"
+        >
+          Refresh
+        </button>
 
-function isAdmin(user) {
-  if (!user) return false;
+      </div>
 
-  const signedInEmail = String(user.email || "")
-    .trim()
-    .toLowerCase();
 
-  const allowedEmails = ADMIN_EMAILS.map(email =>
-    String(email).trim().toLowerCase()
-  );
+      <div class="panel">
 
-  console.log("Firebase signed-in email:", signedInEmail);
-  console.log("Allowed admin emails:", allowedEmails);
+        <div class="table-wrap">
 
-  return allowedEmails.includes(signedInEmail);
-}
-    let app;
-let auth;
-let db;
-let googleProvider;
+          <table>
 
-try {
-  app = getApps().length ? getApp() : null;
+            <thead>
 
-  if (!app) {
-    throw new Error(
-      "Firebase app was not initialized. Check js/firebase-config.js."
-    );
-  }
+              <tr>
 
-  auth = getAuth(app);
-  db = getFirestore(app);
-  googleProvider = new GoogleAuthProvider();
+                <th>
+                  Product
+                </th>
 
-  console.log("AURA Admin Firebase initialized successfully.");
-} catch (error) {
-  console.error("Firebase initialization error:", error);
+                <th>
+                  Category
+                </th>
 
-  document.getElementById("login-error").textContent =
-    "Firebase could not start. Check firebase-config.js.";
-}
+                <th>
+                  Description
+                </th>
 
-    const loginView = document.getElementById("login-view");
-    const adminView = document.getElementById("admin-view");
-    const loginForm = document.getElementById("login-form");
-    const googleLogin = document.getElementById("google-login");
-    const loginError = document.getElementById("login-error");
-    const adminEmail = document.getElementById("admin-email");
-    const adminNotice = document.getElementById("admin-notice");
+                <th>
+                  Suitable Waste
+                </th>
 
-    function isAdmin(user) {
-      if (!user || !user.email) return false;
+                <th>
+                  Image
+                </th>
 
-      return ADMIN_EMAILS
-        .map(email => email.toLowerCase().trim())
-        .includes(user.email.toLowerCase().trim());
-    }
+                <th>
+                  Status
+                </th>
 
-    function showLoginError(message) {
-      loginError.textContent = message || "";
-    }
+              </tr>
 
-    async function rejectNonAdmin(user) {
+            </thead>
 
-  const signedInEmail = user?.email || "Unknown email";
+            <tbody id="products-body"></tbody>
 
-  showLoginError(
-    `Account "${signedInEmail}" is not authorized for the AURA admin dashboard.`
-  );
+          </table>
 
-  console.log("❌ Unauthorized Firebase account:", signedInEmail);
-  console.log("✅ Allowed account:", ADMIN_EMAILS);
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</section>
+
+
+<!-- =====================================================
+     FIREBASE / ADMIN JAVASCRIPT
+     ===================================================== -->
+
+<script type="module">
+
+  /* =====================================================
+     FIREBASE IMPORTS
+     ===================================================== */
+
+  import "./js/firebase-config.js";
+
+  import {
+    getApp,
+    getApps
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+
+  import {
+    getAuth,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+
+  /* =====================================================
+     ADMIN EMAIL
+     ===================================================== */
+
+  const ADMIN_EMAILS = [
+    "hari066@gmail.com"
+  ];
+
+
+  /* =====================================================
+     DOM
+     ===================================================== */
+
+  const loginView =
+    document.getElementById("login-view");
+
+  const adminView =
+    document.getElementById("admin-view");
+
+  const loginForm =
+    document.getElementById("login-form");
+
+  const loginBtn =
+    document.getElementById("login-btn");
+
+  const googleLogin =
+    document.getElementById("google-login");
+
+  const loginError =
+    document.getElementById("login-error");
+
+  const adminEmail =
+    document.getElementById("admin-email");
+
+  const adminNotice =
+    document.getElementById("admin-notice");
+
+  const logoutBtn =
+    document.getElementById("logout-btn");
+
+
+  /* =====================================================
+     FIREBASE INITIALIZATION
+     ===================================================== */
+
+  let app;
+  let auth;
+  let db;
+  let googleProvider;
+
 
   try {
-    await signOut(auth);
-  } catch (e) {
-    console.error(e);
+
+    if (getApps().length === 0) {
+
+      throw new Error(
+        "Firebase app was not initialized."
+      );
+
+    }
+
+    app = getApp();
+
+    auth = getAuth(app);
+
+    db = getFirestore(app);
+
+    googleProvider =
+      new GoogleAuthProvider();
+
+    console.log(
+      "AURA Admin Firebase initialized."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Firebase initialization error:",
+      error
+    );
+
+    loginError.textContent =
+      "Firebase could not start. Check js/firebase-config.js.";
+
   }
-}
 
-    loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      showLoginError("");
 
-      const email = document.getElementById("login-email").value.trim();
-      const password = document.getElementById("login-password").value;
+  /* =====================================================
+     ADMIN CHECK
+     ===================================================== */
 
-      try {
-        const result = await signInWithEmailAndPassword(auth, email, password);
-
-        if (!isAdmin(result.user)) {
-          await rejectNonAdmin(result.user);
-          return;
-        }
-      } catch (error) {
-        console.error(error);
-
-        const messages = {
-          "auth/invalid-credential": "Invalid email or password.",
-          "auth/invalid-email": "Please enter a valid email address.",
-          "auth/user-not-found": "No account exists with this email.",
-          "auth/wrong-password": "Incorrect password.",
-          "auth/too-many-requests": "Too many attempts. Please try again later."
-        };
-
-        showLoginError(messages[error.code] || "Login failed. Please try again.");
-      }
-    });
-
-    googleLogin.addEventListener("click", async () => {
-      showLoginError("");
-
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-
-        if (!isAdmin(result.user)) {
-          await rejectNonAdmin(result.user);
-        }
-      } catch (error) {
-        console.error(error);
-        showLoginError(
-          error.code === "auth/popup-closed-by-user"
-            ? "Google login was cancelled."
-            : "Google login failed. Please try again."
-        );
-      }
-    });
-
-    document.getElementById("logout-btn").addEventListener("click", async () => {
-      await signOut(auth);
-    });
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        loginView.classList.remove("hidden");
-        adminView.classList.add("hidden");
-        return;
-      }
-
-      if (!isAdmin(user)) {
-        await rejectNonAdmin(user);
-        return;
-      }
-
-      loginView.classList.add("hidden");
-      adminView.classList.remove("hidden");
-      adminEmail.textContent = user.email || "";
-      adminNotice.classList.add("hidden");
-
-      await loadDashboard();
-    });
-
-    /* ==========================================
-       2. HELPERS
-       ========================================== */
-
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function formatDate(value) {
-      if (!value) return "—";
-
-      try {
-        const date = typeof value?.toDate === "function"
-          ? value.toDate()
-          : new Date(value);
-
-        if (Number.isNaN(date.getTime())) return "—";
-
-        return date.toLocaleString("en-IN", {
-          dateStyle: "medium",
-          timeStyle: "short"
-        });
-      } catch {
-        return "—";
-      }
-    }
-
-    function normalize(value) {
-      return String(value ?? "").toLowerCase();
-    }
-
-    function renderEmpty(tbody, colspan, message = "No records found.") {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="${colspan}">
-            <div class="empty">${escapeHtml(message)}</div>
-          </td>
-        </tr>
-      `;
-    }
-
-    function renderLoading(tbody, colspan) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="${colspan}">
-            <div class="loading">Loading…</div>
-          </td>
-        </tr>
-      `;
-    }
-
-    function renderError(tbody, colspan, message) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="${colspan}">
-            <div class="error">${escapeHtml(message)}</div>
-          </td>
-        </tr>
-      `;
-    }
-
-    function showAdminNotice(message) {
-      adminNotice.textContent = message;
-      adminNotice.classList.remove("hidden");
-    }
-
-    /* ==========================================
-       3. DATA LOADING
-       ========================================== */
-
- let requestRows = [];
-    let userRows = [];
-    let productRows = [];
-
-    async function loadRequests() {
-      const tbody = document.getElementById("requests-body");
-      renderLoading(tbody, 8);
-
-      try {
-        const q = query(
-          collection(db, "foodWasteRequests"),
-          orderBy("createdAt", "desc")
-        );
-
-        const snapshot = await getDocs(q);
-
-        requestRows = snapshot.docs.map(docSnap => ({
-          id: docSnap.id,
-          ...docSnap.data()
-        }));
-
-        renderRequests();
-        document.getElementById("stat-requests").textContent = requestRows.length;
-      } catch (error) {
-        console.error(error);
-        renderError(
-          tbody,
-          8,
-          "Unable to load requests. Check Firestore rules and the foodWasteRequests collection."
-        );
-      }
-    }
-
-    async function loadUsers() {
-      const tbody = document.getElementById("users-body");
-      renderLoading(tbody, 5);
-
-      try {
-        /*
-          The public AURA flow currently does not require user login.
-          So the main user information is stored inside foodWasteRequests.
-          We first try the users collection, then add unique users found
-          in requests so the Users tab still works with the current site.
-        */
-        let explicitUsers = [];
-
-        try {
-          const snapshot = await getDocs(collection(db, "users"));
-
-          explicitUsers = snapshot.docs.map(docSnap => ({
-            id: docSnap.id,
-            ...docSnap.data()
-          }));
-        } catch (usersError) {
-          console.warn("users collection unavailable; deriving users from requests.", usersError);
-        }
-
-        const derivedByEmail = new Map();
-
-        requestRows.forEach(request => {
-          const email = String(request.email || "").trim().toLowerCase();
-          if (!email) return;
-
-          if (!derivedByEmail.has(email)) {
-            derivedByEmail.set(email, {
-              id: `request-user-${email}`,
-              name: request.name || "",
-              displayName: request.displayName || "",
-              email: request.email || "",
-              phone: request.phone || "",
-              address: request.address || "",
-              createdAt: request.createdAt || null
-            });
-          }
-        });
-
-        const explicitByEmail = new Map(
-          explicitUsers
-            .filter(user => user.email)
-            .map(user => [String(user.email).trim().toLowerCase(), user])
-        );
-
-        // Explicit users take priority; request-derived users fill missing users.
-        for (const [email, user] of derivedByEmail) {
-          if (!explicitByEmail.has(email)) {
-            explicitUsers.push(user);
-          }
-        }
-
-        userRows = explicitUsers;
-
-        renderUsers();
-        document.getElementById("stat-users").textContent = userRows.length;
-      } catch (error) {
-        console.error(error);
-        renderError(
-          tbody,
-          5,
-          "Unable to load users. Check Firestore rules and foodWasteRequests."
-        );
-      }
-    }
-
-    async function loadProducts() {
-      const tbody = document.getElementById("products-body");
-      renderLoading(tbody, 6);
-
-      try {
-        const snapshot = await getDocs(collection(db, "products"));
-
-        productRows = snapshot.docs.map(docSnap => ({
-          id: docSnap.id,
-          ...docSnap.data()
-        }));
-
-        renderProducts();
-
-        document.getElementById("stat-products").textContent = productRows.length;
-        document.getElementById("stat-active-products").textContent =
-          productRows.filter(product => product.active === true).length;
-      } catch (error) {
-        console.error(error);
-        renderError(
-          tbody,
-          6,
-          "Unable to load products. Check Firestore rules and the products collection."
-        );
-      }
-    }
-
-    async function loadDashboard() {
-      await Promise.all([
-        loadRequests(),
-        loadUsers(),
-        loadProducts()
-      ]);
-    }
-
-    /* ==========================================
-       4. REQUEST TABLE
-       ========================================== */
-
-    function renderRequests() {
-      const tbody = document.getElementById("requests-body");
-      const search = normalize(document.getElementById("request-search").value);
-
-      const filtered = requestRows.filter(item => {
-        const waste = Array.isArray(item.selectedWasteTypes)
-          ? item.selectedWasteTypes.join(" ")
-          : "";
-
-        const text = [
-          item.requestId,
-          item.email,
-          item.phone,
-          item.category,
-          item.address,
-          item.status,
-          waste
-        ].join(" ");
-
-        return normalize(text).includes(search);
-      });
-
-      if (!filtered.length) {
-        renderEmpty(tbody, 8);
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(item => {
-        const wasteTypes = Array.isArray(item.selectedWasteTypes)
-          ? item.selectedWasteTypes
-          : [];
-
-        const locationText = item.locationShared
-          ? `${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}`
-          : "Not shared";
-
-        return `
-          <tr>
-            <td>
-              <strong>${escapeHtml(item.requestId || item.id)}</strong>
-              <div class="muted small">${escapeHtml(item.id)}</div>
-            </td>
-            <td>
-              <strong>${escapeHtml(item.email || "—")}</strong>
-              <div class="muted small">${escapeHtml(item.phone || "—")}</div>
-            </td>
-            <td>${escapeHtml(item.category || "—")}</td>
-            <td>
-              <div class="chips">
-                ${wasteTypes.length
-                  ? wasteTypes.map(w => `<span class="chip">${escapeHtml(w)}</span>`).join("")
-                  : "—"}
-              </div>
-            </td>
-            <td>${escapeHtml(item.address || "—")}</td>
-            <td>
-              ${escapeHtml(locationText)}
-              ${item.locationShared && item.altitude !== null && item.altitude !== undefined
-                ? `<div class="muted small">Altitude: ${escapeHtml(Number(item.altitude).toFixed(1))} m</div>`
-                : ""}
-            </td>
-            <td>
-              <span class="status ${item.status === "NEW" ? "pending" : ""}">
-                ${escapeHtml(item.status || "—")}
-              </span>
-            </td>
-            <td>${escapeHtml(formatDate(item.createdAt))}</td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    /* ==========================================
-       5. USER TABLE
-       ========================================== */
-
-    function renderUsers() {
-      const tbody = document.getElementById("users-body");
-      const search = normalize(document.getElementById("user-search").value);
-
-      const filtered = userRows.filter(item => {
-        const text = [
-          item.name,
-          item.displayName,
-          item.email,
-          item.phone,
-          item.address,
-          item.id
-        ].join(" ");
-
-        return normalize(text).includes(search);
-      });
-
-      if (!filtered.length) {
-        renderEmpty(tbody, 5);
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(item => `
-        <tr>
-          <td>
-            <strong>${escapeHtml(item.name || item.displayName || "Unnamed user")}</strong>
-            <div class="muted small">${escapeHtml(item.id)}</div>
-          </td>
-          <td>${escapeHtml(item.email || "—")}</td>
-          <td>${escapeHtml(item.phone || "—")}</td>
-          <td>${escapeHtml(item.address || "—")}</td>
-          <td>${escapeHtml(formatDate(item.createdAt))}</td>
-        </tr>
-      `).join("");
-    }
-
-
-    /* ==========================================
-       6. PRODUCT TABLE
-       ========================================== */
-
-    function renderProducts() {
-      const tbody = document.getElementById("products-body");
-      const search = normalize(document.getElementById("product-search").value);
-
-      const filtered = productRows.filter(item => {
-        const waste = Array.isArray(item.availableWasteTypes)
-          ? item.availableWasteTypes.join(" ")
-          : "";
-
-        const text = [
-          item.productName,
-          item.category,
-          item.description,
-          waste,
-          item.id
-        ].join(" ");
-
-        return normalize(text).includes(search);
-      });
-
-      if (!filtered.length) {
-        renderEmpty(tbody, 6);
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(item => {
-        const waste = Array.isArray(item.availableWasteTypes)
-          ? item.availableWasteTypes
-          : [];
-
-        return `
-          <tr>
-            <td>
-              <strong>${escapeHtml(item.productName || "Untitled product")}</strong>
-              <div class="muted small">${escapeHtml(item.id)}</div>
-            </td>
-            <td>${escapeHtml(item.category || "—")}</td>
-            <td>${escapeHtml(item.description || "—")}</td>
-            <td>
-              <div class="chips">
-                ${waste.length
-                  ? waste.map(w => `<span class="chip">${escapeHtml(w)}</span>`).join("")
-                  : "—"}
-              </div>
-            </td>
-            <td>
-              ${item.imageUrl
-                ? `<img class="product-thumb" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.productName || "Product")}">`
-                : `<span class="muted">No image</span>`}
-            </td>
-            <td>
-              <span class="status ${item.active === true ? "" : "off"}">
-                ${item.active === true ? "ACTIVE" : "INACTIVE"}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    /* ==========================================
-       7. TABS
-       ========================================== */
-
-    document.querySelectorAll(".tab-btn").forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".tab-btn").forEach(btn => {
-          btn.classList.remove("active");
-        });
-
-        document.querySelectorAll(".tab-panel").forEach(panel => {
-          panel.classList.add("hidden");
-        });
-
-        button.classList.add("active");
-        document.getElementById(`tab-${button.dataset.tab}`).classList.remove("hidden");
-      });
-    });
-
-    /* ==========================================
-       8. SEARCH
-       ========================================== */
-
-    document.getElementById("request-search").addEventListener("input", renderRequests);
-    document.getElementById("user-search").addEventListener("input", renderUsers);
-    document.getElementById("product-search").addEventListener("input", renderProducts);
-
-    /* ==========================================
-       9. REFRESH
-       ========================================== */
-
-    document.querySelectorAll("[data-refresh]").forEach(button => {
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-
-        try {
-          if (button.dataset.refresh === "requests") await loadRequests();
-          if (button.dataset.refresh === "users") await loadUsers();
-          if (button.dataset.refresh === "products") await loadProducts();
-        } finally {
-          button.disabled = false;
-        }
-      });
-    });
-  </script>
-</body>
-</html>
-
-    
+  
