@@ -1,850 +1,517 @@
-/* ============================================================
-   AURA MANAGEMENT — Main Stylesheet
-   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-:root {
-  --soil: #6b5344;
-  --soil-dark: #5a4a3a;
-  --leaf: #8cb358;
-  --leaf-dark: #5d7a2a;
-  --clay: #c9a789;
-  --clay-dark: #a0845c;
-  --clay-light: #ddb89f;
-  --moss: #6b9e6b;
-  --moss-light: #9ec79e;
+// ============================================================
+// FIREBASE CONFIG
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBOU5TRy80JkKhWEwbNIe9Ei5-e_QztN3k",
+  authDomain: "zearn-app.firebaseapp.com",
+  projectId: "zearn-app",
+  storageBucket: "zearn-app.firebasestorage.app",
+  messagingSenderId: "212045636123",
+  appId: "1:212045636123:web:495ba5939bdc5c89050ebe",
+  measurementId: "G-GMLDVHFFLN"
+};
 
-  --text: #2a2a2a;
-  --text-light: #666;
-  --bg: #fef8f3;
-  --border: #e8dcd0;
-  --overlay: rgba(0, 0, 0, 0.5);
+let app, db;
 
-  --accent: #8cb358;
-  --accent-dark: #5d7a2a;
-
-  --space-xs: 0.5rem;
-  --space-sm: 1rem;
-  --space-md: 1.5rem;
-  --space-lg: 2rem;
-  --space-xl: 3rem;
-
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-
-  --transition: all 0.3s ease;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+try {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  console.log("✅ Firebase initialized");
+} catch (error) {
+  console.error("❌ Firebase error:", error);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+// ============================================================
+// WASTE TYPES BY CATEGORY
+// ============================================================
+const wasteTypesByCategory = {
+  fertilizer: [
+    "Vegetable peels",
+    "Fruit waste",
+    "Rice & grains",
+    "Bread & bakery",
+    "Tea leaves",
+    "Coffee grounds",
+    "Egg shells",
+    "Leaves & grass"
+  ],
+  biogas: [
+    "Vegetable peels",
+    "Fruit waste",
+    "Rice & grains",
+    "Meat waste",
+    "Dairy waste",
+    "Oil & grease",
+    "Paper & cardboard",
+    "Plant waste"
+  ]
+};
+
+// ============================================================
+// SVG TEMPLATES
+// ============================================================
+const svgTemplates = {
+  fertilizer: '<svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><path d="M55 140 L60 90 Q60 78 72 78 L128 78 Q140 78 140 90 L145 140Z" fill="var(--clay)"/><path d="M60 90 L140 90" stroke="var(--clay-dark)" stroke-width="3"/><path d="M78 60 Q100 40 122 60" stroke="var(--leaf-dark)" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="100" cy="50" r="10" fill="var(--leaf)"/><circle cx="85" cy="58" r="7" fill="var(--leaf)"/><circle cx="115" cy="58" r="7" fill="var(--leaf)"/></svg>',
+  biogas: '<svg viewBox="0 0 200 160"><ellipse cx="100" cy="142" rx="85" ry="12" fill="var(--soil-dark)"/><rect x="65" y="70" width="70" height="65" rx="10" fill="var(--moss)"/><circle cx="100" cy="70" r="30" fill="var(--moss-light)"/><path d="M92 50 q10 -10 4 -22 q14 8 10 24 q-2 10 -14 8Z" fill="var(--leaf)"/><rect x="94" y="128" width="12" height="16" fill="var(--clay-dark)"/></svg>'
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let currentCategory = null;
+let selectedWasteTypes = [];
+let userLocation = null;
+let userLocationShared = false;
+
+// ============================================================
+// SCREEN TRANSITIONS
+// ============================================================
+let screens = {};
+let screenIndex = 0;
+const screenOrder = ["opening", "welcome", "credits", "main"];
+
+function initializeScreens() {
+  screens = {
+    opening: document.getElementById("screen-opening"),
+    welcome: document.getElementById("screen-welcome"),
+    credits: document.getElementById("screen-credits"),
+    main: document.getElementById("site-main")
+  };
+  console.log("✅ Screens initialized");
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'Work Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-/* ============================================================
-   SCREENS / INTRO
-   ============================================================ */
-
-.screen {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  display: none;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-
-.screen.is-active {
-  display: flex;
-  opacity: 1;
-}
-
-.screen--intro {
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-
-.soil-texture {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at 20% 50%, rgba(107, 83, 68, 0.05) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 80%, rgba(140, 179, 88, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.intro-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 2rem;
-  max-width: 600px;
-}
-
-.intro-eyebrow {
-  font-size: 0.875rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--accent-dark);
-  margin-bottom: 1.5rem;
-}
-
-.intro-title {
-  font-size: clamp(2rem, 8vw, 4rem);
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 2rem;
-  letter-spacing: -0.02em;
-}
-
-.intro-title span {
-  display: block;
-  font-size: 0.6em;
-  font-weight: 400;
-  color: var(--text-light);
-  letter-spacing: 0.05em;
-}
-
-.welcome-title {
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  color: var(--text);
-  text-align: center;
-  max-width: 500px;
-  margin-bottom: 2rem;
-}
-
-.welcome-credits-line {
-  font-size: 1rem;
-  color: var(--text);
-  margin: 0.5rem 0;
-}
-
-.welcome-credits-line--main strong {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.welcome-credits-line--sub {
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-.credits-content {
-  text-align: center;
-}
-
-.credits-line {
-  font-size: 1rem;
-  color: var(--text);
-  margin: 0.5rem 0;
-}
-
-.credits-line--main strong {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.credits-line--sub {
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-/* ============================================================
-   BUTTONS
-   ============================================================ */
-
-button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: inherit;
-  transition: var(--transition);
-}
-
-.btn-organic,
-.btn-outline,
-.btn-location {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius);
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.btn-organic {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 4px 12px rgba(140, 179, 88, 0.3);
-}
-
-.btn-organic:hover {
-  background: var(--accent-dark);
-  box-shadow: 0 6px 16px rgba(140, 179, 88, 0.4);
-  transform: translateY(-2px);
-}
-
-.btn-organic:active {
-  transform: translateY(0);
-}
-
-.btn-outline {
-  border: 2px solid var(--border);
-  color: var(--text);
-  background: transparent;
-}
-
-.btn-outline:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.btn-location {
-  background: var(--bg);
-  border: 2px solid var(--border);
-  color: var(--text);
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.btn-location:hover {
-  border-color: var(--accent);
-  background: rgba(140, 179, 88, 0.05);
-}
-
-.btn-location.success {
-  border-color: var(--accent);
-  background: rgba(140, 179, 88, 0.1);
-}
-
-.btn-submit {
-  width: 100%;
-  margin-top: 1.5rem;
-}
-
-svg {
-  flex-shrink: 0;
-}
-
-/* ============================================================
-   MAIN SITE
-   ============================================================ */
-
-#site-main {
-  display: flex !important;
-  opacity: 1 !important;
-  flex-direction: column;
-  min-height: auto;
-}
-
-/* Scroll Hint */
-.scroll-hint {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-light);
-  font-size: 0.875rem;
-  animation: bounce 2s infinite;
-  z-index: 10;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(8px); }
-}
-
-.scroll-hint.hidden {
-  display: none;
-}
-
-/* Hero */
-.hero {
-  padding: 6rem 2rem;
-  text-align: center;
-  background: linear-gradient(135deg, rgba(140, 179, 88, 0.05) 0%, rgba(107, 83, 68, 0.03) 100%);
-}
-
-.hero-eyebrow {
-  font-size: 0.875rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--accent-dark);
-  margin-bottom: 1rem;
-}
-
-.hero-title {
-  font-size: clamp(1.75rem, 5vw, 3rem);
-  color: var(--text);
-  margin-bottom: 1rem;
-  letter-spacing: -0.02em;
-}
-
-.hero-sub {
-  font-size: 1.1rem;
-  color: var(--text-light);
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-/* Panels & Cards */
-.panel {
-  padding: 3rem 2rem;
-}
-
-.panel-title {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  text-align: center;
-  margin-bottom: 3rem;
-  color: var(--text);
-}
-
-.panel-sub {
-  font-size: 0.95rem;
-  color: var(--text-light);
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.card {
-  border: 2px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: white;
-  transition: var(--transition);
-  overflow: hidden;
-}
-
-.card:hover {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-lg);
-}
-
-.card--feature {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  padding: 3rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.card-art {
-  width: 100%;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-art svg {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-}
-
-.card-art--large {
-  margin-bottom: 2rem;
-}
-
-.card-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.card-body h3 {
-  font-size: 1.75rem;
-  color: var(--text);
-}
-
-.card-body p {
-  color: var(--text-light);
-  line-height: 1.7;
-}
-
-.card--choice {
-  padding: 2rem;
-  cursor: pointer;
-}
-
-.choice-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.card-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin-top: 1rem;
-}
-
-/* ============================================================
-   OVERLAYS
-   ============================================================ */
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--overlay);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 1rem;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
-}
-
-.overlay.active {
-  display: flex;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.overlay-panel {
-  background: white;
-  border-radius: var(--radius-xl);
-  padding: 3rem 2rem;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  animation: slideUp 0.4s ease;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+function showScreen(name) {
+  Object.values(screens).forEach(screen => {
+    if (screen) screen.classList.remove("is-active");
+  });
+  if (screens[name]) {
+    screens[name].classList.add("is-active");
+    console.log(`📺 Showing screen: ${name}`);
   }
 }
 
-.overlay-panel h3 {
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-  color: var(--text);
-}
-
-.overlay-panel p {
-  color: var(--text-light);
-  margin-bottom: 1.5rem;
-}
-
-.overlay-panel--form {
-  max-width: 450px;
-}
-
-.overlay-panel--success {
-  text-align: center;
-  max-width: 400px;
-}
-
-.overlay-panel--solutions {
-  max-width: 700px;
-}
-
-/* Forms */
-.checklist,
-.details-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.field span {
-  font-weight: 600;
-  color: var(--text);
-  font-size: 0.95rem;
-}
-
-.field input,
-.field textarea {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  font-family: inherit;
-  font-size: 1rem;
-  color: var(--text);
-  transition: var(--transition);
-}
-
-.field input:focus,
-.field textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(140, 179, 88, 0.1);
-}
-
-.field input::placeholder,
-.field textarea::placeholder {
-  color: #999;
-}
-
-.checklist .field {
-  flex-direction: row;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.checklist input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: var(--accent);
-}
-
-.checklist label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  flex: 1;
-}
-
-.checklist label span {
-  font-weight: 400;
-  margin: 0;
-}
-
-.field-error {
-  display: none;
-  font-size: 0.8rem;
-  color: #e74c3c;
-  margin-top: 0.25rem;
-}
-
-.field-error.show {
-  display: block;
-}
-
-.location-status {
-  font-size: 0.85rem;
-  color: var(--accent);
-  display: none;
-}
-
-.location-status.show {
-  display: block;
-}
-
-/* Selected Summary */
-.selected-summary {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-
-.selected-summary li {
-  display: inline-block;
-  background: rgba(140, 179, 88, 0.1);
-  color: var(--accent-dark);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-/* Success Overlay */
-.success-mark {
-  width: 60px;
-  height: 60px;
-  background: rgba(140, 179, 88, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  color: var(--accent);
-}
-
-.request-id-badge {
-  background: rgba(140, 179, 88, 0.05);
-  padding: 1rem;
-  border-radius: var(--radius);
-  text-align: center;
-  margin: 1.5rem 0;
-}
-
-.request-id-badge span {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--text-light);
-  margin-bottom: 0.5rem;
-}
-
-.request-id-badge strong {
-  display: block;
-  font-size: 1.5rem;
-  color: var(--accent-dark);
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.1em;
-}
-
-.success-location {
-  color: var(--text-light);
-  font-size: 0.95rem;
-  margin: 1.5rem 0;
-}
-
-.success-location-detail {
-  background: rgba(107, 83, 68, 0.05);
-  padding: 1rem;
-  border-radius: var(--radius);
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-bottom: 2rem;
-  word-break: break-all;
-}
-
-.success-contact-message {
-  font-size: 1rem;
-  color: var(--accent-dark);
-  font-weight: 600;
-  margin: 1rem 0 2rem !important;
-}
-
-.success-credits {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  text-align: center;
-  font-size: 0.85rem;
-}
-
-.success-credits p {
-  color: var(--text-light);
-  margin: 0.5rem 0;
-}
-
-.success-credits strong {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.success-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Solutions Grid */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.product-card {
-  border: 2px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  text-align: center;
-  transition: var(--transition);
-}
-
-.product-card:hover {
-  border-color: var(--accent);
-  box-shadow: var(--shadow);
-}
-
-.product-card h4 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.product-card p {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-bottom: 1rem;
-}
-
-.product-card .product-price {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 1rem;
-}
-
-.solutions-status {
-  text-align: center;
-  color: var(--text-light);
-  margin-bottom: 2rem;
-}
-
-/* ============================================================
-   FOOTER
-   ============================================================ */
-
-.site-footer {
-  padding: 3rem 2rem;
-  text-align: center;
-  border-top: 2px solid var(--border);
-  background: rgba(140, 179, 88, 0.02);
-}
-
-.footer-mark {
-  font-size: 1rem;
-  color: var(--text);
-  margin-bottom: 1rem;
-}
-
-.footer-mark a {
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: 600;
-  transition: var(--transition);
-  cursor: pointer;
-}
-
-.footer-mark a:hover {
-  color: var(--accent-dark);
-  text-decoration: underline;
-}
-
-.footer-copy {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  font-size: 0.9rem;
-  color: var(--text-light);
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 768px) {
-  .panel {
-    padding: 2rem 1rem;
-  }
-
-  .card--feature {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 1.5rem;
-  }
-
-  .choice-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .overlay-panel {
-    padding: 2rem 1.5rem;
-  }
-
-  .hero {
-    padding: 4rem 1.5rem;
-  }
-
-  .hero-title {
-    font-size: 1.75rem;
-  }
-
-  .scroll-hint {
-    bottom: 1rem;
-  }
-
-  .footer-copy {
-    flex-direction: column;
-    gap: 0.5rem;
+function nextScreen() {
+  screenIndex++;
+  if (screenIndex < screenOrder.length) {
+    showScreen(screenOrder[screenIndex]);
   }
 }
 
-@media (max-width: 480px) {
-  :root {
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
+// ============================================================
+// INITIALIZE APP
+// ============================================================
+function initializeApp() {
+  console.log("🚀 Initializing app...");
+
+  // Initialize screens
+  initializeScreens();
+
+  // ========== SCREEN TRANSITIONS ==========
+  const btnClickHere = document.getElementById("btn-click-here");
+  if (btnClickHere) {
+    btnClickHere.addEventListener("click", () => {
+      console.log("🔘 Click Here button pressed");
+      nextScreen();
+    });
+    console.log("✅ Click Here button listener attached");
+  } else {
+    console.error("❌ btn-click-here not found");
   }
 
-  .panel {
-    padding: 1.5rem 1rem;
+  // ========== SCROLL HINT ==========
+  const scrollHint = document.getElementById("scroll-hint");
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 100) {
+      scrollHint?.classList.add("hidden");
+    } else {
+      scrollHint?.classList.remove("hidden");
+    }
+  });
+
+  // ========== FOOD WASTE FLOW ==========
+  const foodWasteCard = document.getElementById("card-foodwaste");
+  const choiceSection = document.getElementById("section-choice");
+  const foodWasteOverlay = document.getElementById("overlay-foodwaste");
+
+  const btnOpenFoodWaste = document.querySelector(".btn-open-foodwaste");
+  if (btnOpenFoodWaste) {
+    btnOpenFoodWaste.addEventListener("click", () => {
+      console.log("🥬 Food waste card clicked");
+      foodWasteOverlay.classList.add("active");
+    });
   }
 
-  .overlay-panel {
-    max-width: 100%;
-    padding: 1.5rem 1rem;
-    border-radius: 16px;
+  const btnFoodWasteContinue = document.getElementById("btn-foodwaste-continue");
+  if (btnFoodWasteContinue) {
+    btnFoodWasteContinue.addEventListener("click", () => {
+      console.log("✓ Food waste continue clicked");
+      foodWasteOverlay.classList.remove("active");
+      if (foodWasteCard) foodWasteCard.style.display = "none";
+      if (choiceSection) choiceSection.style.display = "block";
+      setTimeout(() => {
+        choiceSection?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    });
   }
 
-  .card--feature {
-    padding: 1.5rem 1rem;
+  // ========== FERTILIZER / BIOGAS CHOICE ==========
+  document.querySelectorAll(".card--choice").forEach(card => {
+    card.addEventListener("click", () => {
+      const target = card.getAttribute("data-target");
+      console.log(`🌱 Selected category: ${target}`);
+      currentCategory = target;
+      openChecklistOverlay(target);
+    });
+  });
+
+  // ========== CHECKLIST OVERLAY ==========
+  const checklistOverlay = document.getElementById("overlay-checklist");
+  const checklistForm = document.getElementById("checklist-form");
+  const checklistTitle = document.getElementById("checklist-title");
+  const checklistArt = document.getElementById("checklist-art");
+  const checklistError = document.getElementById("checklist-error");
+
+  function openChecklistOverlay(category) {
+    currentCategory = category;
+    selectedWasteTypes = [];
+
+    if (checklistTitle) {
+      checklistTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+    }
+
+    if (checklistArt) {
+      checklistArt.innerHTML = svgTemplates[category];
+    }
+
+    if (checklistForm) {
+      checklistForm.innerHTML = "";
+      wasteTypesByCategory[category].forEach((wasteType, index) => {
+        const id = `waste-${index}`;
+        checklistForm.innerHTML += `
+          <label class="field">
+            <input type="checkbox" id="${id}" value="${wasteType}">
+            <span>${wasteType}</span>
+          </label>
+        `;
+      });
+    }
+
+    if (checklistError) {
+      checklistError.classList.remove("show");
+    }
+
+    if (checklistOverlay) {
+      checklistOverlay.classList.add("active");
+    }
   }
 
-  .card--choice {
-    padding: 1.5rem;
+  const btnChecklistBuy = document.getElementById("btn-checklist-buy");
+  if (btnChecklistBuy) {
+    btnChecklistBuy.addEventListener("click", () => {
+      selectedWasteTypes = [];
+      checklistForm.querySelectorAll("input[type='checkbox']:checked").forEach(checkbox => {
+        selectedWasteTypes.push(checkbox.value);
+      });
+
+      if (selectedWasteTypes.length === 0) {
+        if (checklistError) checklistError.classList.add("show");
+        return;
+      }
+
+      if (checklistOverlay) checklistOverlay.classList.remove("active");
+      openDetailsOverlay();
+    });
   }
 
-  .hero {
-    padding: 3rem 1rem;
+  // ========== DETAILS OVERLAY ==========
+  const detailsOverlay = document.getElementById("overlay-details");
+  const detailsForm = document.getElementById("details-form");
+  const selectedSummary = document.getElementById("selected-summary");
+  const btnShareLocation = document.getElementById("btn-share-location");
+  const locationBtnLabel = document.getElementById("location-btn-label");
+  const locationStatus = document.getElementById("location-status");
+  const submitError = document.getElementById("submit-error");
+
+  function openDetailsOverlay() {
+    if (selectedSummary) {
+      selectedSummary.innerHTML = selectedWasteTypes
+        .map(type => `<li>${type}</li>`)
+        .join("");
+    }
+
+    if (detailsForm) {
+      detailsForm.reset();
+    }
+
+    userLocation = null;
+    userLocationShared = false;
+
+    if (locationBtnLabel) locationBtnLabel.textContent = "Share Live Location";
+    if (locationStatus) locationStatus.classList.remove("show");
+    if (submitError) submitError.textContent = "";
+
+    if (detailsOverlay) {
+      detailsOverlay.classList.add("active");
+    }
   }
 
-  .hero-title {
-    font-size: 1.5rem;
+  // Location sharing
+  if (btnShareLocation) {
+    btnShareLocation.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      if ("geolocation" in navigator) {
+        if (locationBtnLabel) locationBtnLabel.textContent = "Getting location...";
+        if (locationStatus) {
+          locationStatus.classList.add("show");
+          locationStatus.textContent = "Fetching...";
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userLocation = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              altitude: position.coords.altitude,
+              accuracy: position.coords.accuracy
+            };
+            userLocationShared = true;
+            if (locationBtnLabel) locationBtnLabel.textContent = "✓ Location Shared";
+            if (locationStatus) {
+              locationStatus.textContent = `${userLocation.latitude.toFixed(5)}, ${userLocation.longitude.toFixed(5)}`;
+            }
+            if (btnShareLocation) btnShareLocation.classList.add("success");
+            console.log("📍 Location captured:", userLocation);
+          },
+          (error) => {
+            if (locationStatus) {
+              locationStatus.textContent = `Error: ${error.message}`;
+            }
+            if (locationBtnLabel) locationBtnLabel.textContent = "Share Live Location";
+            console.error("❌ Location error:", error);
+          }
+        );
+      } else {
+        if (locationStatus) {
+          locationStatus.textContent = "Geolocation not supported";
+          locationStatus.classList.add("show");
+        }
+      }
+    });
   }
 
-  .product-grid {
-    grid-template-columns: 1fr;
+  // Form validation
+  function validateDetailsForm() {
+    const email = document.getElementById("input-email").value.trim();
+    const phone = document.getElementById("input-phone").value.trim();
+    const address = document.getElementById("input-address").value.trim();
+
+    let isValid = true;
+
+    const emailError = document.querySelector('[data-for="email"]');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (emailError) emailError.classList.add("show");
+      isValid = false;
+    } else {
+      if (emailError) emailError.classList.remove("show");
+    }
+
+    const phoneError = document.querySelector('[data-for="phone"]');
+    if (!phone || phone.length < 10) {
+      if (phoneError) phoneError.classList.add("show");
+      isValid = false;
+    } else {
+      if (phoneError) phoneError.classList.remove("show");
+    }
+
+    const addressError = document.querySelector('[data-for="address"]');
+    if (!address) {
+      if (addressError) addressError.classList.add("show");
+      isValid = false;
+    } else {
+      if (addressError) addressError.classList.remove("show");
+    }
+
+    return isValid;
   }
+
+  // Submit form
+  if (detailsForm) {
+    detailsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (submitError) submitError.textContent = "";
+
+      if (!validateDetailsForm()) {
+        return;
+      }
+
+      const email = document.getElementById("input-email").value.trim();
+      const phone = document.getElementById("input-phone").value.trim();
+      const address = document.getElementById("input-address").value.trim();
+
+      const requestId = `REQ-${Date.now()}`;
+
+      try {
+        const requestData = {
+          requestId,
+          category: currentCategory,
+          selectedWasteTypes,
+          email,
+          phone,
+          address,
+          locationShared: userLocationShared,
+          latitude: userLocation?.latitude || null,
+          longitude: userLocation?.longitude || null,
+          altitude: userLocation?.altitude || null,
+          accuracy: userLocation?.accuracy || null,
+          status: "NEW",
+          createdAt: new Date()
+        };
+
+        const docRef = await addDoc(collection(db, "foodWasteRequests"), requestData);
+        console.log("✅ Request saved:", docRef.id);
+
+        if (detailsOverlay) detailsOverlay.classList.remove("active");
+        showSuccessOverlay(requestId);
+      } catch (error) {
+        console.error("❌ Submit error:", error);
+        if (submitError) submitError.textContent = "Error submitting. Please try again.";
+      }
+    });
+  }
+
+  // ========== SUCCESS OVERLAY ==========
+  const successOverlay = document.getElementById("overlay-success");
+  const successRequestId = document.getElementById("success-request-id");
+  const successSelected = document.getElementById("success-selected");
+  const successLocation = document.getElementById("success-location");
+  const successLocationDetail = document.getElementById("success-location-detail");
+
+  function showSuccessOverlay(requestId) {
+    if (successRequestId) successRequestId.textContent = requestId;
+
+    if (successSelected) {
+      successSelected.innerHTML = selectedWasteTypes
+        .map(type => `<li>${type}</li>`)
+        .join("");
+    }
+
+    if (userLocationShared && userLocation) {
+      if (successLocation) successLocation.textContent = "✓ Location shared:";
+      if (successLocationDetail) {
+        successLocationDetail.innerHTML = `
+          Latitude: ${userLocation.latitude.toFixed(6)}<br>
+          Longitude: ${userLocation.longitude.toFixed(6)}<br>
+          ${userLocation.altitude ? `Altitude: ${userLocation.altitude.toFixed(1)}m<br>` : ""}
+          Accuracy: ±${userLocation.accuracy.toFixed(0)}m
+        `;
+      }
+    } else {
+      if (successLocation) successLocation.textContent = "Location: Not shared";
+      if (successLocationDetail) successLocationDetail.innerHTML = "";
+    }
+
+    if (successOverlay) successOverlay.classList.add("active");
+  }
+
+  // ========== SUCCESS OVERLAY ACTIONS ==========
+  const btnViewSolutions = document.getElementById("btn-view-solutions");
+  if (btnViewSolutions) {
+    btnViewSolutions.addEventListener("click", () => {
+      if (successOverlay) successOverlay.classList.remove("active");
+      loadAndShowSolutions();
+    });
+  }
+
+  const btnSuccessClose = document.getElementById("btn-success-close");
+  if (btnSuccessClose) {
+    btnSuccessClose.addEventListener("click", () => {
+      if (successOverlay) successOverlay.classList.remove("active");
+      resetFlow();
+    });
+  }
+
+  // ========== SOLUTIONS OVERLAY ==========
+  const solutionsOverlay = document.getElementById("overlay-solutions");
+  const solutionsList = document.getElementById("solutions-list");
+  const solutionsStatus = document.getElementById("solutions-status");
+
+  async function loadAndShowSolutions() {
+    if (solutionsList) {
+      solutionsList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Loading solutions...</div>';
+    }
+    if (solutionsOverlay) solutionsOverlay.classList.add("active");
+
+    try {
+      const productsRef = collection(db, "products");
+      const q = query(productsRef);
+      const snapshot = await getDocs(q);
+
+      const products = [];
+      snapshot.forEach(doc => {
+        products.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      if (products.length === 0) {
+        if (solutionsStatus) solutionsStatus.textContent = "No solutions available right now.";
+        if (solutionsList) solutionsList.innerHTML = "";
+        return;
+      }
+
+      if (solutionsStatus) solutionsStatus.textContent = `Found ${products.length} solution(s) for your waste type:`;
+      if (solutionsList) {
+        solutionsList.innerHTML = products
+          .map(product => `
+            <div class="product-card">
+              ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.productName}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">` : ""}
+              <h4>${product.productName || "Untitled"}</h4>
+              <p>${product.description || "No description"}</p>
+              <div class="product-price">₹${product.price || "N/A"}</div>
+              <span class="status ${product.active ? "" : "off"}">${product.active ? "ACTIVE" : "INACTIVE"}</span>
+            </div>
+          `)
+          .join("");
+      }
+    } catch (error) {
+      console.error("❌ Error loading solutions:", error);
+      if (solutionsStatus) solutionsStatus.textContent = "Error loading solutions. Please try again.";
+      if (solutionsList) solutionsList.innerHTML = "";
+    }
+  }
+
+  const btnSolutionsClose = document.getElementById("btn-solutions-close");
+  if (btnSolutionsClose) {
+    btnSolutionsClose.addEventListener("click", () => {
+      if (solutionsOverlay) solutionsOverlay.classList.remove("active");
+      resetFlow();
+    });
+  }
+
+  // ========== RESET FLOW ==========
+  function resetFlow() {
+    currentCategory = null;
+    selectedWasteTypes = [];
+    userLocation = null;
+    userLocationShared = false;
+
+    if (foodWasteCard) foodWasteCard.style.display = "block";
+    if (choiceSection) choiceSection.style.display = "none";
+
+    document.getElementById("section-foodwaste")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  console.log("✅ App fully initialized");
+}
+
+// Wait for DOM to be ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+  initializeApp();
 }
